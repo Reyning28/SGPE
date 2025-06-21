@@ -1,1 +1,632 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGPE - Sistema de Gestión para Pequeñas Empresas</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="bg-decoration">
+        <div class="bg-circle bg-circle-1"></div>
+        <div class="bg-circle bg-circle-2"></div>
+        <div class="bg-circle bg-circle-3"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-cube"></i>
+                </div>
+                <div class="logo-text">
+                    <h2>SGPE</h2>
+                    <span>Sistema de Gestión</span>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <span class="nav-section-title">Principal</span>
+                <ul class="nav-list">
+                    <li class="nav-item active">
+                        <a href="#dashboard" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <span>Dashboard</span>
+                            <div class="nav-indicator"></div>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#inventario" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-boxes"></i>
+                            </div>
+                            <span>Inventario</span>
+                            <div class="nav-badge">0</div>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#clientes" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <span>Clientes</span>
+                            <div class="nav-badge">0</div>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#facturacion" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                            <span>Facturación</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="nav-section">
+                <span class="nav-section-title">Análisis</span>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="#reportes" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <span>Reportes</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#analytics" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <span>Analytics</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="nav-section">
+                <span class="nav-section-title">Sistema</span>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="#configuracion" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <span>Configuración</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="breadcrumb">
+                    <span class="breadcrumb-item">SGPE</span>
+                    <i class="fas fa-chevron-right"></i>
+                    <span class="breadcrumb-item current">Dashboard</span>
+                </div>
+            </div>
+            
+            <div class="header-center">
+                <div class="search-container">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Buscar productos, clientes, facturas...">
+                        <div class="search-shortcut">⌘K</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div class="header-actions">
+                    <button class="action-btn" title="Notificaciones">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-dot"></span>
+                    </button>
+                    <button class="action-btn" title="Mensajes">
+                        <i class="fas fa-envelope"></i>
+                    </button>
+                    <button class="action-btn" title="Configuración">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+                
+                <div class="user-menu">
+                    <div class="user-avatar">
+                        <img src="/placeholder.svg?height=40&width=40" alt="Usuario">
+                        <div class="status-indicator online"></div>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">Admin User</span>
+                        <span class="user-role">Administrador</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-container">
+            <!-- Welcome Section -->
+            <section class="welcome-section">
+                <div class="welcome-content">
+                    <div class="welcome-text">
+                        
+                        <h1>Aquí tienes un resumen de tu negocio hoy</h1>
+                    </div>
+                    <div class="welcome-actions">
+                        <button class="primary-btn">
+                            <i class="fas fa-plus"></i>
+                            Nuevo Producto
+                        </button>
+                        <button class="secondary-btn">
+                            <i class="fas fa-download"></i>
+                            Exportar Datos
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats Grid -->
+            <section class="stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card revenue">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-menu">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </div>
+                        </div>
+                        <div class="stat-content">
+                            <h3>$0</h3>
+                            <p>Ventas del Mes</p>
+                            <div class="stat-trend positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>+12.5%</span>
+                                <small>vs mes anterior</small>
+                            </div>
+                        </div>
+                        <div class="stat-chart">
+                            <div class="mini-chart revenue-chart"></div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card orders">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="stat-menu">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </div>
+                        </div>
+                        <div class="stat-content">
+                            <h3>0</h3>
+                            <p>Pedidos del Mes</p>
+                            <div class="stat-trend positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>+8.2%</span>
+                                <small>vs mes anterior</small>
+                            </div>
+                        </div>
+                        <div class="stat-chart">
+                            <div class="mini-chart orders-chart"></div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card customers">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-menu">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </div>
+                        </div>
+                        <div class="stat-content">
+                            <h3>0</h3>
+                            <p>Clientes Activos</p>
+                            <div class="stat-trend positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>+15.3%</span>
+                                <small>vs mes anterior</small>
+                            </div>
+                        </div>
+                        <div class="stat-chart">
+                            <div class="mini-chart customers-chart"></div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card inventory">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-boxes"></i>
+                            </div>
+                            <div class="stat-menu">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </div>
+                        </div>
+                        <div class="stat-content">
+                            <h3>284</h3>
+                            <p>Productos en Stock</p>
+                            <div class="stat-trend negative">
+                                <i class="fas fa-arrow-down"></i>
+                                <span>-2.1%</span>
+                                <small>vs mes anterior</small>
+                            </div>
+                        </div>
+                        <div class="stat-chart">
+                            <div class="mini-chart inventory-chart"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <div class="charts-grid">
+                    <!-- Revenue Chart -->
+                    <div class="chart-card main-chart">
+                        <div class="chart-header">
+                            <div class="chart-title">
+                                <h3>Análisis de Ventas</h3>
+                                <p>Rendimiento de los últimos 12 meses</p>
+                            </div>
+                            <div class="chart-controls">
+                                <div class="time-selector">
+                                    <button class="time-btn active">12M</button>
+                                    <button class="time-btn">0</button>
+                                    <button class="time-btn">0</button>
+                                    <button class="time-btn">0</button>
+                                </div>
+                                <button class="chart-menu">
+                                    <i class="fas fa-ellipsis-h"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="chart-content">
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-color revenue-color"></div>
+                                    <span>Ingresos</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color orders-color"></div>
+                                    <span>Pedidos</span>
+                                </div>
+                            </div>
+                            <div class="main-chart-container">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Donut Chart -->
+                    <div class="chart-card donut-chart">
+                        <div class="chart-header">
+                            <h3>Categorías Top</h3>
+                            <button class="chart-menu">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                        </div>
+                        <div class="donut-container">
+                            <div class="donut-chart-wrapper">
+                                <canvas id="categoryChart"></canvas>
+                                <div class="donut-center">
+                                    <span class="donut-value">$0</span>
+                                    <span class="donut-label">Total</span>
+                                </div>
+                            </div>
+                            <div class="donut-legend">
+                                <div class="donut-legend-item">
+                                    <div class="legend-dot" style="background: #6366f1;"></div>
+                                    <span>Servicios</span>
+                                    <strong>40%</strong>
+                                </div>
+                                <div class="donut-legend-item">
+                                    <div class="legend-dot" style="background: #8b5cf6;"></div>
+                                    <span>Productos</span>
+                                    <strong>35%</strong>
+                                </div>
+                                <div class="donut-legend-item">
+                                    <div class="legend-dot" style="background: #06b6d4;"></div>
+                                    <span>Consultoría</span>
+                                    <strong>15%</strong>
+                                </div>
+                                <div class="donut-legend-item">
+                                    <div class="legend-dot" style="background: #10b981;"></div>
+                                    <span>Otros</span>
+                                    <strong>10%</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Data Tables Section -->
+            <section class="tables-section">
+                <div class="tables-grid">
+                    <!-- Recent Orders -->
+                    <div class="table-card">
+                        <div class="table-header">
+                            <div class="table-title">
+                                <h3>Pedidos Recientes</h3>
+                                <span class="table-count">0</span>
+                            </div>
+                            <div class="table-actions">
+                                <button class="filter-btn">
+                                    <i class="fas fa-filter"></i>
+                                    Filtrar
+                                </button>
+                                <button class="export-btn">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th>Pedido</th>
+                                        <th>Cliente</th>
+                                        <th>Producto</th>
+                                        <th>Estado</th>
+                                        <th>Total</th>
+                                        <th>Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="table-row">
+                                        <td>
+                                            <div class="order-id">#ORD-001</div>
+                                        </td>
+                                        <td>
+                                            <div class="customer-info">
+                                                <img src="/placeholder.svg?height=32&width=32" alt="Cliente">
+                                                <div>
+                                                    <div class="customer-name">Ana Martínez</div>
+                                                    <div class="customer-email">ana@pyme.com</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="product-info">
+                                                <span class="product-name">Servicio de Consultoría</span>
+                                                <span class="product-sku">SKU: CONS-001</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge processing">
+                                                <i class="fas fa-clock"></i>
+                                                Procesando
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="amount">0</div>
+                                        </td>
+                                        <td>
+                                            <div class="date">Hoy, 14:30</div>
+                                        </td>
+                                    </tr>
+                                    <tr class="table-row">
+                                        <td>
+                                            <div class="order-id">#ORD-002</div>
+                                        </td>
+                                        <td>
+                                            <div class="customer-info">
+                                                <img src="/placeholder.svg?height=32&width=32" alt="Cliente">
+                                                <div>
+                                                    <div class="customer-name">Roberto Silva</div>
+                                                    <div class="customer-email">roberto@empresa.com</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="product-info">
+                                                <span class="product-name">Software de Gestión</span>
+                                                <span class="product-sku">SKU: SOFT-002</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge completed">
+                                                <i class="fas fa-check"></i>
+                                                Completado
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="amount">$0</div>
+                                        </td>
+                                        <td>
+                                            <div class="date">Ayer, 16:45</div>
+                                        </td>
+                                    </tr>
+                                    <tr class="table-row">
+                                        <td>
+                                            <div class="order-id">#ORD-003</div>
+                                        </td>
+                                        <td>
+                                            <div class="customer-info">
+                                                <img src="/placeholder.svg?height=32&width=32" alt="Cliente">
+                                                <div>
+                                                    <div class="customer-name">Carmen López</div>
+                                                    <div class="customer-email">carmen@negocio.com</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="product-info">
+                                                <span class="product-name">Capacitación Empresarial</span>
+                                                <span class="product-sku">SKU: CAP-003</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge shipped">
+                                                <i class="fas fa-truck"></i>
+                                                Enviado
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="amount">$0</div>
+                                        </td>
+                                        <td>
+                                            <div class="date">2 días</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Top Products -->
+                    <div class="table-card">
+                        <div class="table-header">
+                            <div class="table-title">
+                                <h3>Productos Destacados</h3>
+                                <span class="table-count">Top 10</span>
+                            </div>
+                            <div class="table-actions">
+                                <button class="view-all-btn">Ver todos</button>
+                            </div>
+                        </div>
+                        <div class="products-list">
+                            <div class="product-item">
+                                <div class="product-image">
+                                    <img src="/placeholder.svg?height=48&width=48" alt="Producto">
+                                </div>
+                                <div class="product-details">
+                                    <h4>Consultoría Empresarial</h4>
+                                    <p>Asesoría para PYMES</p>
+                                    <div class="product-stats">
+                                        <span class="sales">23 servicios</span>
+                                        <span class="revenue">0</span>
+                                    </div>
+                                </div>
+                                <div class="product-trend">
+                                    <div class="trend-chart positive"></div>
+                                    <span class="trend-value">+12%</span>
+                                </div>
+                            </div>
+
+                            <div class="product-item">
+                                <div class="product-image">
+                                    <img src="/placeholder.svg?height=48&width=48" alt="Producto">
+                                </div>
+                                <div class="product-details">
+                                    <h4>Software de Facturación</h4>
+                                    <p>Sistema de facturación</p>
+                                    <div class="product-stats">
+                                        <span class="sales">45 licencias</span>
+                                        <span class="revenue">$0</span>
+                                    </div>
+                                </div>
+                                <div class="product-trend">
+                                    <div class="trend-chart positive"></div>
+                                    <span class="trend-value">+8%</span>
+                                </div>
+                            </div>
+
+                            <div class="product-item">
+                                <div class="product-image">
+                                    <img src="/placeholder.svg?height=48&width=48" alt="Producto">
+                                </div>
+                                <div class="product-details">
+                                    <h4>Capacitación Digital</h4>
+                                    <p>Cursos empresariales</p>
+                                    <div class="product-stats">
+                                        <span class="sales">18 cursos</span>
+                                        <span class="revenue">$0</span>
+                                    </div>
+                                </div>
+                                <div class="product-trend">
+                                    <div class="trend-chart negative"></div>
+                                    <span class="trend-value">-3%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="actions-section">
+                <div class="actions-grid">
+                    <button class="action-card primary">
+                        <div class="action-icon">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>Agregar Servicio</h4>
+                            <p>Añadir nuevo servicio al catálogo</p>
+                        </div>
+                        <div class="action-arrow">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </button>
+
+                    <button class="action-card secondary">
+                        <div class="action-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>Nuevo Cliente</h4>
+                            <p>Registrar cliente en el sistema</p>
+                        </div>
+                        <div class="action-arrow">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </button>
+
+                    <button class="action-card tertiary">
+                        <div class="action-icon">
+                            <i class="fas fa-file-invoice"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>Crear Factura</h4>
+                            <p>Generar nueva factura de venta</p>
+                        </div>
+                        <div class="action-arrow">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </button>
+
+                    <button class="action-card quaternary">
+                        <div class="action-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>Análisis de Ventas</h4>
+                            <p>Revisar rendimiento del negocio</p>
+                        </div>
+                        <div class="action-arrow">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+</body>
+</html>
 <!-- Pagina de dashboard: En construccion -->

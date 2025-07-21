@@ -1,1 +1,73 @@
-<!-- Pagina de Facturacion: En desarrollo -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SGPE | Módulo de Facturación</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="facturacion.css">
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="logo">SGPE</div>
+      <nav>
+        <a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a>
+        <a href="clientes.html"><i class="fas fa-users"></i> Clientes</a>
+        <a href="productos.html"><i class="fas fa-box"></i> Productos</a>
+        <a href="#" class="active"><i class="fas fa-file-invoice"></i> Facturación</a>
+        <a href="login.html"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="main-header">
+        <h1>Facturación</h1>
+        <button class="btn-primary"><i class="fas fa-file-circle-plus"></i> Nueva Factura</button>
+      </header>
+
+      <section class="client-list">
+        <table>
+          <thead>
+            <tr>
+              <th># Factura</th>
+              <th>Cliente</th>
+              <th>Fecha</th>
+              <th>Total</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>F-00123</td>
+              <td>Juan Pérez</td>
+              <td>2025-07-21</td>
+              <td>$5,200.00</td>
+              <td><span style="color:green;font-weight:bold">Pagada</span></td>
+              <td>
+                <button class="edit"><i class="fas fa-eye"></i></button>
+                <button class="delete"><i class="fas fa-trash"></i></button>
+              </td>
+            </tr>
+            <tr>
+              <td>F-00124</td>
+              <td>Ana Gómez</td>
+              <td>2025-07-20</td>
+              <td>$3,100.00</td>
+              <td><span style="color:orange;font-weight:bold">Pendiente</span></td>
+              <td>
+                <button class="edit"><i class="fas fa-eye"></i></button>
+                <button class="delete"><i class="fas fa-trash"></i></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+  <script src="facturacion.js"></script>
+
+</body>
+</html>

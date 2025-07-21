@@ -1,1 +1,77 @@
-<!-- Pagina de Clientes: En construccion-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SGPE | Módulo de Clientes</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="pagina_cliente.css">
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="logo">SGPE</div>
+      <nav>
+        <a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a>
+        <a href="#" class="active"><i class="fas fa-users"></i> Clientes</a>
+        <a href="#"><i class="fas fa-box"></i> Productos</a>
+        <a href="facturacion.html"><i class="fas fa-file-invoice"></i> Facturación</a>
+        <a href="#"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="main-header">
+        <h1>Clientes Registrados</h1>
+        <button id="newClientBtn" class="btn-primary"><i class="fas fa-user-plus"></i> Nuevo Cliente</button>
+      </header>
+
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Buscar cliente por nombre...">
+        <i class="fas fa-search"></i>
+      </div>
+
+      <section class="client-list">
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Teléfono</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="clientTableBody">
+            <!-- Clientes insertados con JS -->
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal para nuevo cliente -->
+  <div id="clientModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Registrar Cliente</h2>
+      <form id="clientForm">
+        <label>Nombre completo</label>
+        <input type="text" id="nombre" required>
+
+        <label>Correo electrónico</label>
+        <input type="email" id="correo" required>
+
+        <label>Teléfono</label>
+        <input type="tel" id="telefono" required>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary">Guardar</button>
+          <button type="button" id="cancelModal" class="btn-secondary">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="pagina_cliente.js"></script>
+</body>
+</html>

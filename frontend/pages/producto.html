@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGPE - Productos Diversos</title>
+    <link rel="stylesheet" href="Producto.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+    <aside class="sidebar">
+      <div class="logo">SGPE</div>
+      <nav>
+        <a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a>
+        <a href="clientes.html"><i class="fas fa-users"></i> Clientes</a>
+        <a href="facturacion.html"><i class="fas fa-box"></i> Facturación</a>
+        <a href="#" class="active"><i class="fas fa-file-invoice"></i> Productos</a>
+        <a href="login.html"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+      </nav>
+    </aside>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <h1 class="logo">SGPE</h1>
+                    <span class="subtitle">Productos Diversos</span>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-outline">
+                        <i class="fas fa-heart"></i>
+                        Favoritos
+                    </button>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-shopping-cart"></i>
+                        Carrito (<span id="cart-count">0</span>)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <!-- Search and Filters -->
+            <div class="filters-section">
+                <div class="search-container">
+                    <div class="search-input-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="search-input" placeholder="Buscar productos..." class="search-input">
+                    </div>
+                </div>
+
+                <div class="filters-controls">
+                    <select id="category-filter" class="filter-select">
+                        <option value="Todos">Todas las categorías</option>
+                        <option value="Electrónicos">Electrónicos</option>
+                        <option value="Audio">Audio</option>
+                        <option value="Ropa">Ropa</option>
+                        <option value="Hogar">Hogar</option>
+                        <option value="Accesorios">Accesorios</option>
+                    </select>
+
+                    <select id="sort-filter" class="filter-select">
+                        <option value="featured">Destacados</option>
+                        <option value="price-low">Precio: Menor a Mayor</option>
+                        <option value="price-high">Precio: Mayor a Menor</option>
+                        <option value="rating">Mejor Valorados</option>
+                        <option value="name">Nombre A-Z</option>
+                    </select>
+
+                    <div class="filter-dropdown">
+                        <button class="btn btn-outline" id="filters-btn">
+                            <i class="fas fa-filter"></i>
+                            Filtros
+                        </button>
+                        <div class="dropdown-content" id="filters-dropdown">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="stock-filter">
+                                Solo en stock
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="view-toggle">
+                        <button class="view-btn active" id="grid-view" data-view="grid">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button class="view-btn" id="list-view" data-view="list">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results count -->
+            <div class="results-info">
+                <p id="results-count">Mostrando 8 de 8 productos</p>
+            </div>
+
+            <!-- Products Grid -->
+            <div id="products-container" class="products-grid">
+                <!-- Products will be dynamically inserted here -->
+            </div>
+
+            <!-- Empty state -->
+            <div id="empty-state" class="empty-state" style="display: none;">
+                <i class="fas fa-search empty-icon"></i>
+                <h3>No se encontraron productos</h3>
+                <p>Intenta ajustar tus filtros o términos de búsqueda</p>
+            </div>
+        </div>
+    </main>
+
+
+    <script src="Producto.js"></script>
+</body>
+</html>

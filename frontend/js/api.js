@@ -1,5 +1,9 @@
 // Configuración de la API
-const API_BASE_URL = 'http://localhost:3000/api';
+// Usamos una ruta relativa para evitar problemas si el frontend **no** se sirve desde
+// http://localhost:3000 (por ejemplo cuando se despliega en producción, se accede desde
+// otra IP o se consulta a través de un túnel).  De esta forma la llamada se dirige al
+// mismo host donde se está sirviendo la aplicación, solo añadiendo el prefijo /api.
+const API_BASE_URL = '/api';
 
 // Clase para manejar errores de la API
 class ApiError extends Error {

@@ -18,5 +18,5 @@ Este proyecto tiene como objetivo ofrecer a pequeñas empresas una solución par
 
 - **database/**: Scripts para crear o poblar la base de datos (`schema.sql`).
 
-- **.env.example**: Archivo de ejemplo con las variables de entorno necesarias para configurar la base de datos.
+- **config.env.example**: Archivo de ejemplo con las variables de entorno necesarias para configurar la base de datos.
 

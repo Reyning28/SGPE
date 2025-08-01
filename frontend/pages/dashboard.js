@@ -1,8 +1,11 @@
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const menuToggle = document.querySelector(".menu-toggle")
   const sidebar = document.querySelector(".sidebar")
   const mainContent = document.querySelector(".main-content")
+
+  // Cargar datos reales del backend
+  await loadDashboardData();
 
   if (menuToggle) {
     menuToggle.addEventListener("click", () => {
@@ -270,8 +273,47 @@ function initializeCharts() {
   })
 }
 
+// Función para cargar datos reales del dashboard
+async function loadDashboardData() {
+  try {
+    // Cargar clientes desde la API
+    const clientes = await ApiService.ClienteService.getAll();
+    
+    // Actualizar contador de clientes en el sidebar
+    const clientesBadge = document.querySelector('.nav-item a[href="clientes.html"] .nav-badge');
+    if (clientesBadge) {
+      clientesBadge.textContent = clientes.length;
+    }
+    
+    // Actualizar estadísticas principales
+    updateClientStats(clientes);
+    
+    console.log(`Dashboard cargado con ${clientes.length} clientes`);
+  } catch (error) {
+    console.error('Error al cargar datos del dashboard:', error);
+    showNotification("Error al cargar datos", "error");
+  }
+}
+
+function updateClientStats(clientes) {
+  // Actualizar estadísticas de clientes en el dashboard
+  const totalClientes = clientes.length;
+  
+  // Buscar elementos de estadísticas y actualizarlos
+  const statsElements = document.querySelectorAll('.stat-value');
+  statsElements.forEach(element => {
+    const statType = element.closest('.stat-card')?.querySelector('.stat-label')?.textContent;
+    if (statType && statType.toLowerCase().includes('cliente')) {
+      element.textContent = totalClientes;
+    }
+  });
+}
+
 function refreshDashboardData() {
   console.log("Refreshing dashboard data...")
+
+  // Recargar datos reales
+  loadDashboardData();
 
   // Animate stat values
   const statValues = document.querySelectorAll(".stat-content h3")

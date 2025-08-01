@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Empresarial - Login</title>
+    <title>SGPE - Registro de Usuario</title>
     <link rel="stylesheet" href="login.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -19,16 +19,29 @@
                 <p class="company-subtitle">Sistema de Gestión para Pequeñas Empresas</p>
             </div>
 
-           
             <div class="login-card">
                 <div class="card-header">
-                    <h2 class="card-title">Iniciar Sesión</h2>
-                    <p class="card-description">Ingresa tus credenciales para acceder al sistema</p>
+                    <h2 class="card-title">Crear Cuenta</h2>
+                    <p class="card-description">Regístrate para acceder al sistema</p>
                 </div>
 
                 <div class="card-content">
-                    <form id="loginForm" class="login-form">
-                      
+                    <form id="registerForm" class="login-form">
+                        <div class="form-group">
+                            <label for="nombre" class="form-label">Nombre Completo</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-user input-icon"></i>
+                                <input 
+                                    type="text" 
+                                    id="nombre" 
+                                    name="nombre" 
+                                    placeholder="Tu nombre completo" 
+                                    class="form-input"
+                                    required
+                                >
+                            </div>
+                        </div>
+
                         <div class="form-group">
                             <label for="email" class="form-label">Correo Electrónico</label>
                             <div class="input-wrapper">
@@ -44,7 +57,6 @@
                             </div>
                         </div>
 
-                        
                         <div class="form-group">
                             <label for="password" class="form-label">Contraseña</label>
                             <div class="input-wrapper">
@@ -56,35 +68,37 @@
                                     placeholder="••••••••" 
                                     class="form-input"
                                     required
+                                    minlength="6"
                                 >
-                                <buttonbutton type="button" class="password-toggle" onclick="togglePassword()" aria-label="Mostrar u ocultar contraseña">
+                                <button type="button" class="password-toggle" onclick="togglePassword()" aria-label="Mostrar u ocultar contraseña">
                                     <i class="fas fa-eye" id="toggleIcon"></i>
                                 </button>
                             </div>
                         </div>
 
-                       
-                        <div class="form-options">
-                            <div class="checkbox-wrapper">
-                                <input type="checkbox" id="remember" name="remember" class="checkbox">
-                                <label for="remember" class="checkbox-label">Recordar sesión</label>
+                        <div class="form-group">
+                            <label for="confirmPassword" class="form-label">Confirmar Contraseña</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input 
+                                    type="password" 
+                                    id="confirmPassword" 
+                                    name="confirmPassword" 
+                                    placeholder="••••••••" 
+                                    class="form-input"
+                                    required
+                                >
                             </div>
-                            <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
                         </div>
 
-                     
                         <button type="submit" class="login-button">
-                            Iniciar Sesión
+                            Crear Cuenta
                         </button>
                     </form>
 
-                   
                     <div class="support-info">
-                        <p>¿No tienes cuenta? 
-                            <a href="register.html" class="support-link">Crear cuenta nueva</a>
-                        </p>
-                        <p>¿Necesitas ayuda? 
-                            <a href="#" class="support-link">Contactar soporte técnico</a>
+                        <p>¿Ya tienes una cuenta? 
+                            <a href="login.html" class="support-link">Iniciar Sesión</a>
                         </p>
                     </div>
                 </div>
@@ -94,6 +108,7 @@
     </div>
 
     <script src="../js/api.js"></script>
-    <script src="login.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="register.js"></script>
 </body>
-</html>
+</html> 

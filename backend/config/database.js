@@ -1,15 +1,40 @@
 const { Sequelize } = require('sequelize');
+require('dotenv').config();
 
-const db = new Sequelize('sgpe_db', 'root', '', {
-  host: 'localhost',
-  dialect: 'postgres',
-  logging: false, // Desactiva los logs de SQL
-  pool: {
-    max: 5, // Máximo número de conexiones en el pool
-    min: 0, // Mínimo número de conexiones en el pool
-    acquire: 30000, // Tiempo máximo para adquirir una conexión
-    idle: 10000 // Tiempo máximo que una conexión puede estar inactiva antes de ser liberada
-  }
-});
+// Configuración para desarrollo con SQLite (más fácil de configurar)
+const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 
-module.exports = db;
+if (isDevelopment) {
+  // Usar SQLite para desarrollo
+  const db = new Sequelize({
+    dialect: 'sqlite',
+    storage: './database.sqlite', // Archivo de base de datos local
+    logging: console.log,
+    define: {
+      timestamps: true
+    }
+  });
+
+  module.exports = db;
+} else {
+  // Usar MySQL para producción
+  const db = new Sequelize(
+    process.env.DB_NAME || 'sgpe_db',
+    process.env.DB_USER || 'root',
+    process.env.DB_PASSWORD || '',
+    {
+      host: process.env.DB_HOST || 'localhost',
+      port: process.env.DB_PORT || 3306,
+      dialect: 'mysql',
+      logging: process.env.NODE_ENV === 'development' ? console.log : false,
+      pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000,
+        idle: 10000
+      }
+    }
+  );
+
+  module.exports = db;
+}

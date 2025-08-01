@@ -34,16 +34,34 @@ function showMessage(message, type = 'info') {
     setTimeout(() => messageDiv.remove(), 3000);
 }
 
-document.getElementById('loginForm').addEventListener('submit', async function(e) {
+document.getElementById('registerForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
+    const nombre = document.getElementById('nombre').value;
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    const remember = document.getElementById('remember').checked;
+    const confirmPassword = document.getElementById('confirmPassword').value;
 
-    // Validación básica
-    if (!email || !password) {
+    // Validaciones
+    if (!nombre || !email || !password || !confirmPassword) {
         showMessage('Por favor, completa todos los campos', 'error');
+        return;
+    }
+
+    if (password.length < 6) {
+        showMessage('La contraseña debe tener al menos 6 caracteres', 'error');
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        showMessage('Las contraseñas no coinciden', 'error');
+        return;
+    }
+
+    // Validar email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showMessage('Por favor ingresa un email válido', 'error');
         return;
     }
     
@@ -51,16 +69,20 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         // Mostrar indicador de carga
         const submitBtn = e.target.querySelector('button[type="submit"]');
         const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Iniciando sesión...';
+        submitBtn.textContent = 'Creando cuenta...';
         submitBtn.disabled = true;
 
-        // Intentar login con la API
-        const response = await ApiService.AuthService.login({ email, password });
+        // Intentar registro con la API
+        const response = await ApiService.AuthService.register({ 
+            nombre, 
+            email, 
+            password 
+        });
         
         // Guardar token
         ApiService.AuthService.setToken(response.token);
         
-        showMessage('Login exitoso! Redirigiendo...', 'success');
+        showMessage('Cuenta creada exitosamente! Redirigiendo...', 'success');
         
         // Redirigir al dashboard
         setTimeout(() => {
@@ -68,8 +90,8 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         }, 1000);
         
     } catch (error) {
-        console.error('Error en login:', error);
-        showMessage(error.message || 'Error al iniciar sesión', 'error');
+        console.error('Error en registro:', error);
+        showMessage(error.message || 'Error al crear la cuenta', 'error');
         
         // Restaurar botón
         const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -78,6 +100,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     }
 });
 
+// Validaciones en tiempo real
 document.getElementById('email').addEventListener('input', function(e) {
     const email = e.target.value;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -99,6 +122,18 @@ document.getElementById('password').addEventListener('input', function(e) {
     }
 });
 
+document.getElementById('confirmPassword').addEventListener('input', function(e) {
+    const password = document.getElementById('password').value;
+    const confirmPassword = e.target.value;
+    
+    if (confirmPassword && password !== confirmPassword) {
+        e.target.setCustomValidity('Las contraseñas no coinciden');
+    } else {
+        e.target.setCustomValidity('');
+    }
+});
+
+// Efectos visuales
 document.querySelectorAll('.form-input').forEach(input => {
     input.addEventListener('focus', function() {
         this.parentElement.style.transform = 'scale(1.02)';
@@ -110,6 +145,7 @@ document.querySelectorAll('.form-input').forEach(input => {
     });
 });
 
+// Enviar formulario con Enter
 document.addEventListener('keypress', function(e) {
     if (e.key === 'Enter' && e.target.tagName !== 'BUTTON' && e.target.type !== 'submit') {
         const form = e.target.closest('form');
@@ -120,7 +156,4 @@ document.addEventListener('keypress', function(e) {
             }
         }
     }
-});
-
-
-
+}); 

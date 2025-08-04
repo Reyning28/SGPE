@@ -3,15 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Cuenta - SGPE</title>
-    <link rel="stylesheet" href="login.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>SGPE - Registro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .login-button {
-            margin-top: 16px;
-            margin-bottom: 16px;
-            padding: 12px 0;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
             width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+        .login-wrapper {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+        .logo {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .company-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .company-subtitle {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        .login-card {
+            padding: 30px;
+        }
+        .card-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .card-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .card-description {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        .input-wrapper {
+            position: relative;
+        }
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 0.9em;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .login-button {
+            width: 100%;
+            padding: 14px;
             background-color: #2d89ef;
             color: #fff;
             border: none;
@@ -23,6 +111,10 @@
         }
         .login-button:hover {
             background-color: #1b5fa7;
+        }
+        .login-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
         }
         .form-options {
             text-align: center;
@@ -39,6 +131,13 @@
         .support-link:hover {
             color: #1b5fa7;
             text-decoration: underline;
+        }
+        #error-message, #success-message {
+            display: none;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
         }
     </style>
 </head>
@@ -101,6 +200,20 @@
                                 >
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label for="confirmPassword" class="form-label">Confirmar Contraseña</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input 
+                                    type="password" 
+                                    id="confirmPassword" 
+                                    name="confirmPassword" 
+                                    placeholder="••••••••" 
+                                    class="form-input"
+                                    required
+                                >
+                            </div>
+                        </div>
                         <button type="submit" class="login-button">Registrarse</button>
                     </form>
                     <div class="form-options">
@@ -110,6 +223,7 @@
             </div>
         </div>
     </div>
+    <script src="../js/api.js"></script>
     <script src="register.js"></script>
 </body>
 </html>

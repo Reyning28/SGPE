@@ -1,5 +1,12 @@
-// Configuración de la API
+// Configuración de la API - Funciona con Live Server y otros servidores
 const API_BASE_URL = "http://localhost:3000/api";
+
+// Detectar automáticamente el puerto del frontend
+const FRONTEND_PORT = window.location.port || (window.location.protocol === 'https:' ? '443' : '80');
+const BACKEND_PORT = '3000';
+
+console.log('🌐 Frontend ejecutándose en puerto:', FRONTEND_PORT);
+console.log('🔧 Backend configurado en puerto:', BACKEND_PORT);
 
 // Clase para manejar errores de la API
 class ApiError extends Error {
@@ -28,6 +35,7 @@ async function apiRequest(endpoint, options = {}) {
   const config = { ...defaultOptions, ...options };
 
   try {
+    console.log('🌐 Intentando conectar a:', url);
     const response = await fetch(url, config);
     
     if (!response.ok) {
@@ -36,10 +44,87 @@ async function apiRequest(endpoint, options = {}) {
     
     return await response.json();
   } catch (error) {
-    console.error('Error en petición API:', error);
+    console.error('❌ Error en petición API:', error);
+    
+    // Mensaje más específico para errores de conexión
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new ApiError(`Error de conexión con el servidor. Verifica que el backend esté ejecutándose en http://localhost:${BACKEND_PORT}`, 0);
+    }
+    
     throw error;
   }
 }
+
+// Función para verificar si el backend está disponible
+async function checkBackendConnection() {
+  try {
+    console.log('🔍 Verificando conexión con el backend...');
+    const response = await fetch(`http://localhost:${BACKEND_PORT}/api`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (response.ok) {
+      console.log('✅ Backend conectado correctamente');
+      return true;
+    } else {
+      console.log('❌ Backend respondió con error:', response.status);
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ Backend no disponible:', error);
+    return false;
+  }
+}
+
+// Función para mostrar estado de conexión en la página
+function showConnectionStatus(isConnected) {
+  // Crear o actualizar el indicador de estado
+  let statusIndicator = document.getElementById('connection-status');
+  
+  if (!statusIndicator) {
+    statusIndicator = document.createElement('div');
+    statusIndicator.id = 'connection-status';
+    statusIndicator.style.cssText = `
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      z-index: 9999;
+      transition: all 0.3s ease;
+    `;
+    document.body.appendChild(statusIndicator);
+  }
+  
+  if (isConnected) {
+    statusIndicator.textContent = '🟢 Conectado';
+    statusIndicator.style.backgroundColor = '#d4edda';
+    statusIndicator.style.color = '#155724';
+    statusIndicator.style.border = '1px solid #c3e6cb';
+  } else {
+    statusIndicator.textContent = '🔴 Desconectado';
+    statusIndicator.style.backgroundColor = '#f8d7da';
+    statusIndicator.style.color = '#721c24';
+    statusIndicator.style.border = '1px solid #f5c6cb';
+  }
+}
+
+// Verificar conexión automáticamente al cargar
+document.addEventListener('DOMContentLoaded', async function() {
+  const isConnected = await checkBackendConnection();
+  showConnectionStatus(isConnected);
+  
+  // Verificar cada 30 segundos
+  setInterval(async () => {
+    const connected = await checkBackendConnection();
+    showConnectionStatus(connected);
+  }, 30000);
+});
 
 // Servicios para Autenticación
 const AuthService = {
@@ -236,5 +321,7 @@ window.ApiService = {
   ProductoService,
   FacturacionService,
   InventarioService,
-  ApiError
+  ApiError,
+  checkBackendConnection,
+  showConnectionStatus
 }; 

@@ -1,0 +1,19 @@
+{
+  "name": "sgpe-frontend",
+  "version": "1.0.0",
+  "description": "Frontend para el Sistema de Gestión para Pequeñas Empresas",
+  "main": "index.html",
+  "scripts": {
+    "start": "live-server --port=8080 --open=/pages/dashboard.html",
+    "dev": "live-server --port=8080 --open=/pages/dashboard.html",
+    "build": "echo 'Frontend build completed'",
+    "test": "echo 'No tests specified' && exit 0"
+  },
+  "keywords": ["sgpe", "frontend", "html", "css", "javascript"],
+  "author": "SGPE Team",
+  "license": "ISC",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  },
+  "dependencies": {}
+} 

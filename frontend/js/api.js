@@ -116,31 +116,116 @@ const ClienteService = {
   }
 };
 
-// Servicios para Productos (para el futuro)
+// Servicios para Productos
 const ProductoService = {
-  async getAll() {
-    return await apiRequest('/productos');
+  // Obtener todos los productos
+  async getAll(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/productos?${queryString}` : '/productos';
+    return await apiRequest(endpoint);
   },
 
+  // Obtener productos con stock bajo
+  async getStockBajo() {
+    return await apiRequest('/productos/stock-bajo');
+  },
+
+  // Obtener un producto por ID
+  async getById(id) {
+    return await apiRequest(`/productos/${id}`);
+  },
+
+  // Crear un nuevo producto
   async create(producto) {
     return await apiRequest('/productos', {
       method: 'POST',
       body: JSON.stringify(producto)
     });
+  },
+
+  // Actualizar un producto
+  async update(id, producto) {
+    return await apiRequest(`/productos/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(producto)
+    });
+  },
+
+  // Actualizar stock de un producto
+  async updateStock(id, cantidad, tipo) {
+    return await apiRequest(`/productos/${id}/stock`, {
+      method: 'PATCH',
+      body: JSON.stringify({ cantidad, tipo })
+    });
+  },
+
+  // Eliminar un producto
+  async delete(id) {
+    return await apiRequest(`/productos/${id}`, {
+      method: 'DELETE'
+    });
   }
 };
 
-// Servicios para Facturación (para el futuro)
+// Servicios para Facturación
 const FacturacionService = {
-  async getAll() {
-    return await apiRequest('/facturas');
+  // Obtener todas las facturas
+  async getAll(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/facturas?${queryString}` : '/facturas';
+    return await apiRequest(endpoint);
   },
 
+  // Obtener estadísticas de facturación
+  async getEstadisticas(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/facturas/estadisticas?${queryString}` : '/facturas/estadisticas';
+    return await apiRequest(endpoint);
+  },
+
+  // Obtener una factura por ID
+  async getById(id) {
+    return await apiRequest(`/facturas/${id}`);
+  },
+
+  // Crear una nueva factura
   async create(factura) {
     return await apiRequest('/facturas', {
       method: 'POST',
       body: JSON.stringify(factura)
     });
+  },
+
+  // Actualizar estado de una factura
+  async updateEstado(id, estado) {
+    return await apiRequest(`/facturas/${id}/estado`, {
+      method: 'PATCH',
+      body: JSON.stringify({ estado })
+    });
+  },
+
+  // Eliminar una factura
+  async delete(id) {
+    return await apiRequest(`/facturas/${id}`, {
+      method: 'DELETE'
+    });
+  }
+};
+
+// Servicios para Inventario (alias de ProductoService para compatibilidad)
+const InventarioService = {
+  ...ProductoService,
+  // Métodos específicos del inventario
+  async getProductosBajoStock() {
+    return await ProductoService.getStockBajo();
+  },
+
+  async registrarEntrada(productoId, cantidad, motivo = 'Entrada manual') {
+    return await ProductoService.updateStock(productoId, cantidad, 'entrada');
+  },
+
+  async registrarSalida(productoId, cantidad, motivo = 'Salida manual') {
+    return await ProductoService.updateStock(productoId, cantidad, 'salida');
   }
 };
 
@@ -150,5 +235,6 @@ window.ApiService = {
   ClienteService,
   ProductoService,
   FacturacionService,
+  InventarioService,
   ApiError
 }; 

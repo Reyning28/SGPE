@@ -63,16 +63,18 @@ npm start
 
 3. **Configurar el Frontend**
 ```bash
-cd ../frontend
-# Abrir pages/dashboard.html en tu navegador
-# O usar un servidor web local
+cd frontend
+npm install
+REM Abrir pages/dashboard.html en tu navegador
+REM O usar un servidor web local
+REM Ejemplo: abrir frontend/pages/dashboard.html con doble clic o desde el navegador
 ```
 
 4. **Configurar Chatbot (Opcional)**
 ```bash
 # Editar backend/config.env
-# Descomentar y configurar:
-# OPENAI_API_KEY=tu_api_key_aqui
+# Descomentar y configurar la línea:
+OPENAI_API_KEY=tu_api_key_aqui
 ```
 
 5. **Acceder al Sistema**
@@ -92,31 +94,31 @@ SGPE/
 │   │   ├── clienteController.js
 │   │   ├── productoController.js
 │   │   ├── facturaController.js
-│   │   └── chatbotController.js  # 🤖 Nuevo: Controlador del chatbot
+│   │   └── chatbotController.js  #  Nuevo: Controlador del chatbot
 │   ├── models/            # Modelos de datos (Sequelize)
 │   ├── routes/            # Rutas API
-│   │   └── chatbotRoutes.js     # 🤖 Nuevo: Rutas del chatbot
+│   │   └── chatbotRoutes.js     #  Nuevo: Rutas del chatbot
 │   ├── server.js          # Servidor principal
 │   └── package.json       # Dependencias del backend
 ├── frontend/              # Interfaz de usuario
 │   ├── pages/            # Páginas HTML
-│   │   ├── chatbot.css          # 🤖 Nuevo: Estilos del chatbot
-│   │   ├── chatbot.js           # 🤖 Nuevo: Lógica del chatbot
-│   │   └── chatbot-demo.html    # 🤖 Nuevo: Demo del chatbot
+│   │   ├── chatbot.css          #  Nuevo: Estilos del chatbot
+│   │   ├── chatbot.js           #  Nuevo: Lógica del chatbot
+│   │   └── chatbot-demo.html    #  Nuevo: Demo del chatbot
 │   ├── js/               # JavaScript del frontend
 │   ├── components/       # Componentes reutilizables
-│   │   └── chatbot-widget.html  # 🤖 Nuevo: Widget del chatbot
+│   │   └── chatbot-widget.html  #  Nuevo: Widget del chatbot
 │   ├── index.html        # Página principal
 │   └── package.json      # Dependencias del frontend
 ├── database/             # Scripts de base de datos
 ├── SETUP.md             # Guía completa de configuración
-├── CHATBOT-README.md    # 🤖 Nuevo: Documentación del chatbot
-├── CHATBOT-GUIA-RAPIDA.md # 🤖 Nuevo: Guía rápida del chatbot
-├── start-chatbot.bat    # 🤖 Nuevo: Script para iniciar con chatbot
+├── CHATBOT-README.md    #  Nuevo: Documentación del chatbot
+├── CHATBOT-GUIA-RAPIDA.md #  Nuevo: Guía rápida del chatbot
+├── start-chatbot.bat    #  Nuevo: Script para iniciar con chatbot
 └── README.md            # Este archivo
 ```
 
-## 🗄️ Base de Datos
+##  Base de Datos
 
 El sistema utiliza **SQLite** para desarrollo (archivo `database.sqlite`) con las siguientes tablas:
 
@@ -144,7 +146,7 @@ El sistema utiliza **SQLite** para desarrollo (archivo `database.sqlite`) con la
 - `POST /api/facturas` - Crear factura
 - `GET /api/facturas/:id` - Obtener factura
 
-### 🤖 Chatbot (Nuevo)
+###  Chatbot (Nuevo)
 - `GET /api/chatbot/status` - Estado del chatbot
 - `POST /api/chatbot/message` - Enviar mensaje al chatbot
 - `POST /api/chatbot/clear` - Limpiar historial de conversación
@@ -156,7 +158,7 @@ El sistema utiliza **SQLite** para desarrollo (archivo `database.sqlite`) con la
 - ✅ Base de datos SQLite con Sequelize
 - ✅ Sistema de autenticación JWT
 - ✅ Controladores para todas las entidades
-- ✅ **Chatbot IA integrado** 🤖
+- ✅ **Chatbot IA integrado** 
 - ✅ Validaciones y manejo de errores
 - ✅ CORS configurado para frontend
 
@@ -166,7 +168,7 @@ El sistema utiliza **SQLite** para desarrollo (archivo `database.sqlite`) con la
 - ✅ Gestión completa de clientes
 - ✅ Control de inventario
 - ✅ Sistema de facturación
-- ✅ **Chatbot flotante en todas las páginas** 🤖
+- ✅ **Chatbot flotante en todas las páginas** 
 - ✅ Login y autenticación
 - ✅ Validaciones en tiempo real
 
@@ -174,11 +176,11 @@ El sistema utiliza **SQLite** para desarrollo (archivo `database.sqlite`) con la
 - ✅ Comunicación frontend-backend
 - ✅ Autenticación entre componentes
 - ✅ Manejo de tokens JWT
-- ✅ **API del chatbot funcionando** 🤖
+- ✅ **API del chatbot funcionando** 
 - ✅ Validaciones en tiempo real
 - ✅ Manejo de errores y estados de carga
 
-### 🤖 Chatbot IA (Nuevo)
+###  Chatbot IA (Nuevo)
 - ✅ **Asistente virtual inteligente**
 - ✅ **Respuestas contextuales sobre SGPE**
 - ✅ **Interfaz moderna y responsive**
@@ -188,7 +190,7 @@ El sistema utiliza **SQLite** para desarrollo (archivo `database.sqlite`) con la
 - ✅ **Historial de conversaciones**
 - ✅ **Integrado en dashboard y páginas principales**
 
-## 🔧 Scripts Disponibles
+##  Scripts Disponibles
 
 ### Backend
 ```bash
@@ -234,11 +236,11 @@ npm run init-db
 
 Para información detallada sobre configuración, consulte:
 - **[SETUP.md](./SETUP.md)** - Guía completa de instalación y configuración
-- **[CHATBOT-README.md](./CHATBOT-README.md)** 🤖 - Documentación técnica del chatbot
-- **[CHATBOT-GUIA-RAPIDA.md](./CHATBOT-GUIA-RAPIDA.md)** 🤖 - Guía rápida para usar el chatbot
+- **[CHATBOT-README.md](./CHATBOT-README.md)**  - Documentación técnica del chatbot
+- **[CHATBOT-GUIA-RAPIDA.md](./CHATBOT-GUIA-RAPIDA.md)**  - Guía rápida para usar el chatbot
 - **[roadmap.md](./roadmap.md)** - Cronograma y fases del proyecto
 
-### 🤖 Archivos específicos del Chatbot
+###  Archivos específicos del Chatbot
 - `start-chatbot.bat` - Script para iniciar el sistema con chatbot
 - `frontend/pages/chatbot-demo.html` - Página de demostración
 - `frontend/components/chatbot-widget.html` - Widget reutilizable
@@ -251,7 +253,7 @@ Para información detallada sobre configuración, consulte:
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abrir un Pull Request
 
-## 📄 Licencia
+##  Licencia
 
 Este proyecto está bajo la Licencia ISC. Ver el archivo [LICENSE](./LICENSE) para más detalles.
 
@@ -262,5 +264,5 @@ David Alejandro Liranzo 2023-1127
 
 Elier Moreta Encarnación 2023-1168
 
-**¡El sistema SGPE está completamente funcional y listo para usar!**
+
 

@@ -9,6 +9,7 @@ const clienteRoutes = require('./routes/clienteRoutes');
 const authRoutes = require('./routes/authRoutes');
 const productoRoutes = require('./routes/productoRoutes');
 const facturaRoutes = require('./routes/facturaRoutes');
+const chatbotRoutes = require('./routes/chatbotRoutes');
 
 // Importar modelos para configurar relaciones
 require('./config/initDatabase');
@@ -31,7 +32,8 @@ app.get('/api', (req, res) => {
       auth: '/api/auth',
       clientes: '/api/clientes',
       productos: '/api/productos',
-      facturas: '/api/facturas'
+      facturas: '/api/facturas',
+      chatbot: '/api/chatbot'
     }
   });
 });
@@ -47,6 +49,9 @@ app.use('/api/productos', productoRoutes);
 
 // Rutas de facturas (protegidas)
 app.use('/api/facturas', facturaRoutes);
+
+// Rutas del chatbot
+app.use('/api/chatbot', chatbotRoutes);
 
 // Middleware para manejar rutas no encontradas
 app.use('*', (req, res) => {

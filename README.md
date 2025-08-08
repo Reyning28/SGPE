@@ -138,11 +138,9 @@ Para información detallada sobre configuración, consulte:
 Este proyecto está bajo la Licencia ISC. Ver el archivo [LICENSE](./LICENSE) para más detalles.
 
 ## Autores
-
-
-## Agradecimientos
-
-
+Reyning Perdomo Feliz 2023-1110
+David Alejandro Liranzo 2023-1127
+Elier Moreta Encarnación 2023-1168
 
 **¡El sistema SGPE está completamente funcional y listo para usar!**
 

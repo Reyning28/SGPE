@@ -15,7 +15,7 @@
       <nav>
         <a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a>
         <a href="#" class="active"><i class="fas fa-users"></i> Clientes</a>
-        <a href="#"><i class="fas fa-box"></i> Productos</a>
+        <a href="producto.html"><i class="fas fa-box"></i> Inventario</a>
         <a href="facturacion.html"><i class="fas fa-file-invoice"></i> Facturación</a>
         <a href="#" class="logout-btn" data-action="logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
       </nav>
@@ -24,7 +24,10 @@
     <main class="main">
       <header class="main-header">
         <h1>Clientes Registrados</h1>
-        <button id="newClientBtn" class="btn-primary"><i class="fas fa-user-plus"></i> Nuevo Cliente</button>
+        <div class="header-actions">
+          <div class="clients-count">8 clientes cargados</div>
+          <button id="newClientBtn" class="btn-primary"><i class="fas fa-user-plus"></i> Nuevo Cliente</button>
+        </div>
       </header>
 
       <div class="search-bar">
@@ -75,5 +78,6 @@
   <script src="../js/api.js"></script>
   <script src="../js/auth.js"></script>
   <script src="pagina_cliente.js"></script>
+  
 </body>
 </html>

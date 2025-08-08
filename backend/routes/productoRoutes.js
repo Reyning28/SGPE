@@ -9,8 +9,8 @@ router.use(authController.verifyToken);
 // Rutas para productos (protegidas)
 router.get('/', productoController.getProductos);
 router.get('/stock-bajo', productoController.getProductosStockBajo);
-router.get('/:id', productoController.getProductoById);
 router.post('/', productoController.createProducto);
+router.get('/:id', productoController.getProductoById);
 router.put('/:id', productoController.updateProducto);
 router.patch('/:id/stock', productoController.updateStock);
 router.delete('/:id', productoController.deleteProducto);

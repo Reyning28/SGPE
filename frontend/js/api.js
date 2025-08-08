@@ -79,8 +79,12 @@ async function checkBackendConnection() {
   }
 }
 
-// Función para mostrar estado de conexión en la página
+// Función para mostrar estado de conexión en la página - DESHABILITADA
 function showConnectionStatus(isConnected) {
+  // Función deshabilitada - no mostrar indicador de conexión
+  return;
+  
+  /* CÓDIGO ORIGINAL COMENTADO:
   // Crear o actualizar el indicador de estado
   let statusIndicator = document.getElementById('connection-status');
   
@@ -112,12 +116,24 @@ function showConnectionStatus(isConnected) {
     statusIndicator.style.color = '#721c24';
     statusIndicator.style.border = '1px solid #f5c6cb';
   }
+  */
 }
 
-// Verificar conexión automáticamente al cargar
+// Verificar conexión automáticamente al cargar - DESHABILITADO
 document.addEventListener('DOMContentLoaded', async function() {
+  // Eliminar indicador de conexión si ya existe
+  const existingIndicator = document.getElementById('connection-status');
+  if (existingIndicator) {
+    existingIndicator.remove();
+  }
+  
+  // Función deshabilitada - no verificar ni mostrar estado de conexión
+  return;
+  
+  /* CÓDIGO ORIGINAL COMENTADO:
   const isConnected = await checkBackendConnection();
   showConnectionStatus(isConnected);
+  */
   
   // Verificar cada 30 segundos
   setInterval(async () => {

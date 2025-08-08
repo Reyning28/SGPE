@@ -13,6 +13,11 @@ const facturaRoutes = require('./routes/facturaRoutes');
 // Importar modelos para configurar relaciones
 require('./config/initDatabase');
 
+// Importar asociaciones entre modelos
+console.log('🔗 Configurando asociaciones entre modelos...');
+require('./config/associations');
+console.log('✅ Asociaciones configuradas correctamente');
+
 app.use(cors());
 app.use(express.json());
 

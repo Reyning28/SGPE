@@ -1,0 +1,1829 @@
+// ===== Dashboard SGPE - JavaScript =====
+
+let dashboardData = {
+    facturas: [],
+    productos: [],
+    clientes: [],
+    stats: {
+        ventasHoy: 0,
+        facturasHoy: 0,
+        ventasMes: 0,
+        totalProductos: 0,
+        productosStockBajo: 0,
+        totalClientes: 0,
+        clientesNuevos: 0,
+        totalFacturas: 0,
+        facturasPendientes: 0
+    }
+};
+
+let ventasChart = null;
+let stockChart = null;
+
+// ===== FUNCIONES DE UTILIDAD =====
+function scrollToAnalytics() {
+    const analyticsSection = document.querySelector('.analytics-section');
+    if (analyticsSection) {
+        analyticsSection.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+}
+
+// ===== INICIALIZACIÓN =====
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Dashboard cargando...');
+    
+    // Test rápido de elementos DOM
+    console.log('Elementos encontrados:');
+    console.log('ventas-mes:', document.getElementById('ventas-mes'));
+    console.log('total-productos:', document.getElementById('total-productos'));
+    console.log('total-clientes:', document.getElementById('total-clientes'));
+    console.log('total-facturas:', document.getElementById('total-facturas'));
+    
+    initDashboard();
+    
+    // Test directo después de 2 segundos
+    setTimeout(testDirectUpdate, 2000);
+    
+    // Test de event listeners después de 3 segundos
+    setTimeout(testEventListeners, 3000);
+});
+
+// Función de test para actualizar valores directamente
+function testDirectUpdate() {
+    console.log('Ejecutando test directo de actualización...');
+    
+    // Actualizar directamente sin depender de initDashboard
+    const testData = {
+        ventasMes: 75800.00,
+        totalProductos: 284,
+        productosStockBajo: 5,
+        totalClientes: 156,
+        clientesNuevos: 8,
+        totalFacturas: 1250,
+        facturasPendientes: 12
+    };
+    
+    // Actualizar elementos uno por uno
+    updateElement('ventas-mes', formatCurrency(testData.ventasMes));
+    updateElement('total-productos', testData.totalProductos);
+    updateElement('productos-bajo-stock', testData.productosStockBajo);
+    updateElement('total-clientes', testData.totalClientes);
+    updateElement('clientes-nuevos', testData.clientesNuevos);
+    updateElement('total-facturas', testData.totalFacturas);
+    updateElement('facturas-pendientes', testData.facturasPendientes);
+    
+    console.log('Test directo completado');
+}
+
+// Función de test para event listeners
+function testEventListeners() {
+    console.log('Testing event listeners...');
+    
+    const userMenu = document.querySelector('.user-menu');
+    const dropdownItems = document.querySelectorAll('.user-dropdown .dropdown-item');
+    
+    console.log('User menu element:', userMenu);
+    console.log('Dropdown items found:', dropdownItems.length);
+    
+    if (dropdownItems.length > 0) {
+        // Test manual del primer elemento
+        const firstItem = dropdownItems[0];
+        console.log('First dropdown item text:', firstItem.textContent.trim());
+        
+        // Agregar event listener de prueba
+        firstItem.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('TEST: First item clicked successfully!');
+            alert('Button functionality test: SUCCESS!');
+        });
+        
+        console.log('Test event listener added to first item');
+    }
+}
+
+async function initDashboard() {
+    try {
+        // Verificar autenticación
+        if (!verificarAuth()) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Mostrar loading
+        showLoading(true);
+
+        // Inicializar con datos por defecto para evitar carga perpetua
+        initializeDefaultData();
+
+        // Intentar cargar datos reales (sin bloquear si fallan)
+        loadDataSafely();
+
+        // Calcular estadísticas
+        calcularEstadisticas();
+
+        // Actualizar UI
+        actualizarDashboard();
+
+        // Inicializar gráficas (comentado temporalmente para debug)
+        // inicializarGraficas();
+
+        // Inicializar menú de usuario
+        initUserMenu();
+
+        // Configurar auto-refresh cada 5 minutos
+        setInterval(() => {
+            refrescarDatos();
+        }, 300000);
+
+        // Agregar listener para redimensionar gráficos
+        window.addEventListener('resize', () => {
+            setTimeout(() => {
+                if (ventasChart) ventasChart.resize();
+                if (stockChart) stockChart.resize();
+            }, 100);
+        });
+
+        console.log('Dashboard cargado exitosamente');
+    } catch (error) {
+        console.error('Error cargando dashboard:', error);
+        mostrarError('Error cargando el dashboard');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Inicializar con datos por defecto
+function initializeDefaultData() {
+    dashboardData.facturas = [];
+    dashboardData.productos = [];
+    dashboardData.clientes = [];
+    dashboardData.stats = {
+        ventasHoy: 2500.00,
+        facturasHoy: 8,
+        ventasMes: 75800.00,
+        totalProductos: 284,
+        productosStockBajo: 5,
+        totalClientes: 156,
+        clientesNuevos: 8,
+        totalFacturas: 1250,
+        facturasPendientes: 12
+    };
+    
+    console.log('Datos por defecto inicializados:', dashboardData.stats);
+}
+
+// Cargar datos de forma segura (sin bloquear)
+async function loadDataSafely() {
+    try {
+        await Promise.allSettled([
+            cargarFacturas(),
+            cargarProductos(),
+            cargarClientes()
+        ]);
+    } catch (error) {
+        console.log('Algunos datos no se pudieron cargar, usando valores por defecto');
+    }
+}
+
+// ===== CARGA DE DATOS =====
+async function cargarFacturas() {
+    try {
+        if (window.ApiService && window.ApiService.FacturacionService) {
+            const response = await window.ApiService.FacturacionService.getAll();
+            if (response.success) {
+                dashboardData.facturas = response.data || [];
+            }
+        }
+    } catch (error) {
+        console.error('Error cargando facturas:', error);
+        dashboardData.facturas = [];
+    }
+}
+
+async function cargarProductos() {
+    try {
+        if (window.ApiService && window.ApiService.ProductoService) {
+            const response = await window.ApiService.ProductoService.getAll();
+            if (response.success) {
+                dashboardData.productos = response.data || [];
+            }
+        }
+    } catch (error) {
+        console.error('Error cargando productos:', error);
+        dashboardData.productos = [];
+    }
+}
+
+async function cargarClientes() {
+    try {
+        if (window.ApiService && window.ApiService.ClienteService) {
+            const response = await window.ApiService.ClienteService.getAll();
+            if (response.success) {
+                dashboardData.clientes = response.data || [];
+            }
+        }
+    } catch (error) {
+        console.error('Error cargando clientes:', error);
+        dashboardData.clientes = [];
+    }
+}
+
+// ===== CÁLCULO DE ESTADÍSTICAS =====
+function calcularEstadisticas() {
+    const hoy = new Date();
+    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    const finHoy = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 1);
+
+    // Facturas de hoy
+    const facturasHoy = dashboardData.facturas.filter(f => {
+        const fechaFactura = new Date(f.fecha);
+        return fechaFactura >= new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()) && 
+               fechaFactura < finHoy;
+    });
+
+    // Facturas del mes
+    const facturasMes = dashboardData.facturas.filter(f => {
+        const fechaFactura = new Date(f.fecha);
+        return fechaFactura >= inicioMes && fechaFactura <= hoy;
+    });
+
+    // Ventas de hoy
+    dashboardData.stats.ventasHoy = facturasHoy
+        .filter(f => f.estado === 'pagada')
+        .reduce((sum, f) => sum + (f.total || 0), 0);
+
+    // Facturas de hoy
+    dashboardData.stats.facturasHoy = facturasHoy.length;
+
+    // Ventas del mes
+    dashboardData.stats.ventasMes = facturasMes
+        .filter(f => f.estado === 'pagada')
+        .reduce((sum, f) => sum + (f.total || 0), 0);
+
+    // Total productos
+    dashboardData.stats.totalProductos = dashboardData.productos.length;
+
+    // Productos con stock bajo
+    dashboardData.stats.productosStockBajo = dashboardData.productos.filter(p => 
+        (p.stock || 0) <= (p.stockMinimo || 5) && (p.stock || 0) > 0
+    ).length;
+
+    // Total clientes
+    dashboardData.stats.totalClientes = dashboardData.clientes.length;
+
+    // Clientes nuevos del mes
+    dashboardData.stats.clientesNuevos = dashboardData.clientes.filter(c => {
+        const fechaRegistro = new Date(c.fechaRegistro || c.createdAt);
+        return fechaRegistro >= inicioMes && fechaRegistro <= hoy;
+    }).length;
+
+    // Total facturas del mes
+    dashboardData.stats.totalFacturas = facturasMes.length;
+
+    // Facturas pendientes
+    dashboardData.stats.facturasPendientes = dashboardData.facturas.filter(f => 
+        f.estado === 'pendiente'
+    ).length;
+}
+
+// ===== ACTUALIZACIÓN DE UI =====
+function actualizarDashboard() {
+    console.log('Actualizando dashboard con datos:', dashboardData.stats);
+    
+    // Estadísticas rápidas en welcome
+    updateElement('ventas-hoy', formatCurrency(dashboardData.stats.ventasHoy));
+    updateElement('facturas-hoy', dashboardData.stats.facturasHoy);
+
+    // Tarjetas principales
+    updateElement('ventas-mes', formatCurrency(dashboardData.stats.ventasMes));
+    updateElement('total-productos', dashboardData.stats.totalProductos);
+    updateElement('productos-bajo-stock', dashboardData.stats.productosStockBajo);
+    updateElement('total-clientes', dashboardData.stats.totalClientes);
+    updateElement('clientes-nuevos', dashboardData.stats.clientesNuevos);
+    updateElement('total-facturas', dashboardData.stats.totalFacturas);
+    updateElement('facturas-pendientes', dashboardData.stats.facturasPendientes);
+
+    console.log('Elementos actualizados en el DOM');
+
+    // Actualizar trends
+    actualizarTrends();
+
+    // Actualizar actividad reciente
+    actualizarActividadReciente();
+
+    // Actualizar alertas
+    actualizarAlertas();
+
+    // Actualizar insights
+    actualizarInsights();
+}
+
+function actualizarTrends() {
+    // Trend de ventas (simulado)
+    const trendVentas = document.getElementById('trend-ventas');
+    if (trendVentas) {
+        const porcentaje = dashboardData.stats.ventasMes > 0 ? '+12.5%' : '0%';
+        trendVentas.innerHTML = `
+            <i class="fas fa-arrow-up"></i>
+            <span>${porcentaje}</span>
+            <small>vs mes anterior</small>
+        `;
+        trendVentas.className = 'stat-trend ' + (dashboardData.stats.ventasMes > 0 ? 'positive' : 'neutral');
+    }
+
+    // Trend de stock
+    const trendStock = document.getElementById('trend-stock');
+    if (trendStock) {
+        const icon = dashboardData.stats.productosStockBajo > 0 ? 'exclamation-triangle' : 'check-circle';
+        const color = dashboardData.stats.productosStockBajo > 0 ? 'warning' : 'positive';
+        trendStock.className = `stat-trend ${color}`;
+    }
+
+    // Trend de clientes
+    const trendClientes = document.getElementById('trend-clientes');
+    if (trendClientes) {
+        trendClientes.className = 'stat-trend ' + (dashboardData.stats.clientesNuevos > 0 ? 'positive' : 'neutral');
+    }
+
+    // Trend de facturas
+    const trendFacturas = document.getElementById('trend-facturas');
+    if (trendFacturas) {
+        const color = dashboardData.stats.facturasPendientes > 5 ? 'warning' : 'neutral';
+        trendFacturas.className = `stat-trend ${color}`;
+    }
+}
+
+function actualizarActividadReciente() {
+    const container = document.getElementById('actividad-reciente');
+    if (!container) return;
+
+    const actividades = [];
+
+    // Agregar facturas recientes
+    const facturasRecientes = dashboardData.facturas
+        .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+        .slice(0, 3);
+
+    facturasRecientes.forEach(factura => {
+        actividades.push({
+            icon: 'file-invoice',
+            color: 'success',
+            mensaje: `Factura ${factura.numero} creada`,
+            tiempo: formatTimeAgo(factura.fecha),
+            link: 'facturacion.html'
+        });
+    });
+
+    // Agregar productos con stock bajo
+    const productosStockBajo = dashboardData.productos
+        .filter(p => (p.stock || 0) <= (p.stockMinimo || 5) && (p.stock || 0) > 0)
+        .slice(0, 2);
+
+    productosStockBajo.forEach(producto => {
+        actividades.push({
+            icon: 'exclamation-triangle',
+            color: 'warning',
+            mensaje: `Stock bajo: ${producto.nombre}`,
+            tiempo: 'Ahora',
+            link: 'producto.html'
+        });
+    });
+
+    // Si no hay actividades
+    if (actividades.length === 0) {
+        container.innerHTML = `
+            <div class="activity-item">
+                <div class="activity-icon info">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <div class="activity-content">
+                    <p>No hay actividad reciente</p>
+                    <span class="activity-time">Sistema iniciado</span>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    // Mostrar actividades
+    container.innerHTML = actividades.map(act => `
+        <div class="activity-item">
+            <div class="activity-icon ${act.color}">
+                <i class="fas fa-${act.icon}"></i>
+            </div>
+            <div class="activity-content">
+                <p>${act.mensaje}</p>
+                <span class="activity-time">${act.tiempo}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function actualizarAlertas() {
+    const container = document.getElementById('alertas-sistema');
+    const countEl = document.getElementById('alerts-count');
+    if (!container || !countEl) return;
+
+    const alertas = [];
+
+    // Alertas de stock bajo
+    const stockBajo = dashboardData.stats.productosStockBajo;
+    if (stockBajo > 0) {
+        alertas.push({
+            icon: 'exclamation-triangle',
+            color: 'warning',
+            mensaje: `${stockBajo} producto${stockBajo > 1 ? 's' : ''} con stock bajo`,
+            tiempo: 'Ahora'
+        });
+    }
+
+    // Alertas de facturas pendientes
+    const pendientes = dashboardData.stats.facturasPendientes;
+    if (pendientes > 5) {
+        alertas.push({
+            icon: 'clock',
+            color: 'warning',
+            mensaje: `${pendientes} facturas pendientes de pago`,
+            tiempo: 'Ahora'
+        });
+    }
+
+    // Productos agotados
+    const agotados = dashboardData.productos.filter(p => (p.stock || 0) <= 0).length;
+    if (agotados > 0) {
+        alertas.push({
+            icon: 'times-circle',
+            color: 'error',
+            mensaje: `${agotados} producto${agotados > 1 ? 's' : ''} agotado${agotados > 1 ? 's' : ''}`,
+            tiempo: 'Ahora'
+        });
+    }
+
+    // Actualizar contador
+    countEl.textContent = alertas.length;
+
+    // Si no hay alertas
+    if (alertas.length === 0) {
+        container.innerHTML = `
+            <div class="alert-item success">
+                <div class="alert-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="alert-content">
+                    <p>Sistema funcionando correctamente</p>
+                    <span class="alert-time">Ahora</span>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    // Mostrar alertas
+    container.innerHTML = alertas.map(alert => `
+        <div class="alert-item ${alert.color}">
+            <div class="alert-icon">
+                <i class="fas fa-${alert.icon}"></i>
+            </div>
+            <div class="alert-content">
+                <p>${alert.mensaje}</p>
+                <span class="alert-time">${alert.tiempo}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function actualizarInsights() {
+    // Productos más vendidos (simulado por falta de detalles de venta)
+    const topProductos = document.getElementById('productos-top');
+    if (topProductos) {
+        if (dashboardData.productos.length === 0) {
+            topProductos.innerHTML = `
+                <div class="insight-item">
+                    <div class="insight-info">
+                        <span class="insight-name">Sin productos registrados</span>
+                        <span class="insight-metric">0 vendidos</span>
+                    </div>
+                    <div class="insight-value">$0</div>
+                </div>
+            `;
+        } else {
+            const productosTop = dashboardData.productos.slice(0, 5);
+            topProductos.innerHTML = productosTop.map(producto => `
+                <div class="insight-item">
+                    <div class="insight-info">
+                        <span class="insight-name">${producto.nombre}</span>
+                        <span class="insight-metric">Stock: ${producto.stock || 0}</span>
+                    </div>
+                    <div class="insight-value">${formatCurrency(producto.precio || 0)}</div>
+                </div>
+            `).join('');
+        }
+    }
+
+    // Mejores clientes (simulado)
+    const topClientes = document.getElementById('clientes-top');
+    if (topClientes) {
+        if (dashboardData.clientes.length === 0) {
+            topClientes.innerHTML = `
+                <div class="insight-item">
+                    <div class="insight-info">
+                        <span class="insight-name">Sin clientes registrados</span>
+                        <span class="insight-metric">0 compras</span>
+                    </div>
+                    <div class="insight-value">$0</div>
+                </div>
+            `;
+        } else {
+            const clientesTop = dashboardData.clientes.slice(0, 5);
+            topClientes.innerHTML = clientesTop.map(cliente => `
+                <div class="insight-item">
+                    <div class="insight-info">
+                        <span class="insight-name">${cliente.nombre}</span>
+                        <span class="insight-metric">${cliente.email || 'Sin email'}</span>
+                    </div>
+                    <div class="insight-value">Cliente</div>
+                </div>
+            `).join('');
+        }
+    }
+}
+
+// ===== GRÁFICAS =====
+function inicializarGraficas() {
+    inicializarGraficaVentas();
+    inicializarGraficaStock();
+}
+
+function inicializarGraficaVentas() {
+    const ctx = document.getElementById('ventasChart');
+    if (!ctx) return;
+
+    // Datos de los últimos 7 días
+    const labels = [];
+    const datos = [];
+    
+    for (let i = 6; i >= 0; i--) {
+        const fecha = new Date();
+        fecha.setDate(fecha.getDate() - i);
+        labels.push(fecha.toLocaleDateString('es-ES', { weekday: 'short' }));
+        
+        // Calcular ventas del día
+        const ventasDelDia = dashboardData.facturas.filter(f => {
+            const fechaFactura = new Date(f.fecha);
+            return fechaFactura.toDateString() === fecha.toDateString() && f.estado === 'pagada';
+        }).reduce((sum, f) => sum + (f.total || 0), 0);
+        
+        datos.push(ventasDelDia);
+    }
+
+    ventasChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Ventas',
+                data: datos,
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#2563eb',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#f1f5f9'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return formatCurrency(value);
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            elements: {
+                point: {
+                    hoverRadius: 8
+                }
+            }
+        }
+    });
+}
+
+function inicializarGraficaStock() {
+    const ctx = document.getElementById('stockChart');
+    if (!ctx) return;
+
+    const disponibles = dashboardData.productos.filter(p => (p.stock || 0) > (p.stockMinimo || 5)).length;
+    const stockBajo = dashboardData.stats.productosStockBajo;
+    const agotados = dashboardData.productos.filter(p => (p.stock || 0) <= 0).length;
+
+    stockChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Disponible', 'Stock Bajo', 'Agotado'],
+            datasets: [{
+                data: [disponibles, stockBajo, agotados],
+                backgroundColor: [
+                    '#10b981',
+                    '#f59e0b', 
+                    '#ef4444'
+                ],
+                borderColor: [
+                    '#059669',
+                    '#d97706',
+                    '#dc2626'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            aspectRatio: 1,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            cutout: '70%',
+            layout: {
+                padding: {
+                    left: 10,
+                    right: 10,
+                    top: 10,
+                    bottom: 10
+                }
+            }
+        }
+    });
+}
+
+// ===== FUNCIONES AUXILIARES =====
+function updateElement(id, value) {
+    const element = document.getElementById(id);
+    if (element) {
+        element.textContent = value;
+        console.log(`Actualizado elemento ${id} con valor: ${value}`);
+    } else {
+        console.warn(`Elemento con ID '${id}' no encontrado en el DOM`);
+    }
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('es-DO', {
+        style: 'currency',
+        currency: 'DOP'
+    }).format(amount || 0);
+}
+
+function formatTimeAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return 'Ayer';
+    if (diffDays < 7) return `Hace ${diffDays} días`;
+    if (diffDays < 30) return `Hace ${Math.ceil(diffDays / 7)} semanas`;
+    return date.toLocaleDateString('es-ES');
+}
+
+function verificarAuth() {
+    // Permitir acceso para testing (en producción verificar token)
+    const token = localStorage.getItem('token');
+    console.log('Verificando auth - token:', token);
+    
+    // Para testing, siempre permitir acceso
+    if (!token) {
+        console.log('Sin token, pero permitiendo acceso para testing');
+        // Establecer un token temporal
+        localStorage.setItem('token', 'test-token-123');
+    }
+    
+    return true; // Siempre permitir para testing
+}
+
+function showLoading(show) {
+    // Implementar loading si es necesario
+    console.log('Loading:', show);
+}
+
+function mostrarError(mensaje) {
+    console.error(mensaje);
+    // Implementar notificación de error si es necesario
+}
+
+async function refrescarDatos() {
+    console.log('Refrescando datos del dashboard...');
+    await initDashboard();
+}
+
+// ===== EVENTOS =====
+document.addEventListener('click', function(e) {
+    // Botones de período en gráfica de ventas
+    if (e.target.classList.contains('chart-btn')) {
+        const periodo = e.target.dataset.period;
+        
+        // Remover clase active de todos los botones
+        document.querySelectorAll('.chart-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Agregar clase active al botón clickeado
+        e.target.classList.add('active');
+        
+        // Actualizar gráfica según período
+        actualizarGraficaVentas(parseInt(periodo));
+    }
+});
+
+function actualizarGraficaVentas(dias = 7) {
+    if (!ventasChart) return;
+    
+    const labels = [];
+    const datos = [];
+    
+    for (let i = dias - 1; i >= 0; i--) {
+        const fecha = new Date();
+        fecha.setDate(fecha.getDate() - i);
+        
+        if (dias === 7) {
+            labels.push(fecha.toLocaleDateString('es-ES', { weekday: 'short' }));
+        } else {
+            labels.push(fecha.getDate().toString());
+        }
+        
+        const ventasDelDia = dashboardData.facturas.filter(f => {
+            const fechaFactura = new Date(f.fecha);
+            return fechaFactura.toDateString() === fecha.toDateString() && f.estado === 'pagada';
+        }).reduce((sum, f) => sum + (f.total || 0), 0);
+        
+        datos.push(ventasDelDia);
+    }
+    
+    ventasChart.data.labels = labels;
+    ventasChart.data.datasets[0].data = datos;
+    ventasChart.update();
+}
+
+// ===== GESTIÓN DEL MENÚ DE USUARIO =====
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing dashboard...');
+    initUserMenu();
+    initDashboard();
+});
+
+function initUserMenu() {
+    const userMenu = document.querySelector('.user-menu');
+    const userDropdown = document.querySelector('.user-dropdown');
+    
+    if (!userMenu || !userDropdown) {
+        console.log('User menu elements not found');
+        return;
+    }
+
+    console.log('User menu initialized');
+
+    // Click para toggle del menú
+    userMenu.addEventListener('click', function(e) {
+        e.stopPropagation();
+        console.log('User menu clicked');
+        
+        if (userMenu.classList.contains('active')) {
+            userMenu.classList.remove('active');
+            console.log('Menu closed');
+        } else {
+            userMenu.classList.add('active');
+            console.log('Menu opened');
+        }
+    });
+
+    // Cerrar menú al hacer click fuera
+    document.addEventListener('click', function(e) {
+        if (!userMenu.contains(e.target)) {
+            userMenu.classList.remove('active');
+        }
+    });
+
+    // Prevenir que el dropdown se cierre al hacer click en él
+    userDropdown.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+
+    // Manejar clicks en opciones del menú
+    const dropdownItems = userDropdown.querySelectorAll('.dropdown-item');
+    console.log(`Found ${dropdownItems.length} dropdown items`);
+    
+    dropdownItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Dropdown item clicked:', this.textContent.trim());
+            
+            try {
+                const action = this.dataset.action;
+                const icon = this.querySelector('i').className;
+                const text = this.textContent.trim();
+                
+                console.log('Action data:', { action, icon, text });
+                
+                if (action === 'logout') {
+                    console.log('Calling handleLogout()');
+                    handleLogout();
+                } else {
+                    console.log('Calling handleUserMenuAction()');
+                    handleUserMenuAction(text, icon);
+                }
+                
+                // Cerrar menú después de la acción
+                userMenu.classList.remove('active');
+            } catch (error) {
+                console.error('Error handling menu action:', error);
+            }
+        });
+    });
+}
+
+function handleUserMenuAction(action, icon) {
+    console.log('handleUserMenuAction called with:', { action, icon });
+    
+    // Mostrar notificación de la acción
+    try {
+        showUserActionNotification(action, icon);
+    } catch (error) {
+        console.error('Error showing notification:', error);
+    }
+    
+    try {
+        switch(action) {
+            case 'Ver Mi Perfil':
+                console.log('Showing profile modal');
+                showProfileModal();
+                break;
+            case 'Editar Perfil':
+                console.log('Showing edit profile modal');
+                showEditProfileModal();
+                break;
+            case 'Configuración':
+                console.log('Showing settings modal');
+                showSettingsModal();
+                break;
+            case 'Notificaciones':
+                console.log('Showing notifications modal');
+                showNotificationsModal();
+                break;
+            case 'Ayuda y Soporte':
+                console.log('Showing help modal');
+                showHelpModal();
+                break;
+            default:
+                console.log('Acción no definida:', action);
+        }
+    } catch (error) {
+        console.error('Error executing menu action:', error);
+    }
+}
+
+// ===== MODAL DE PERFIL =====
+function showProfileModal() {
+    console.log('showProfileModal() called');
+    
+    try {
+        const modal = createModal('profile-modal', 'Mi Perfil', `
+        <div class="profile-content">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <img src="/placeholder.svg?height=80&width=80" alt="Avatar">
+                    <div class="avatar-status online"></div>
+                </div>
+                <div class="profile-info">
+                    <h3>Administrador SGPE</h3>
+                    <p>admin@sgpe.com</p>
+                    <span class="profile-role">Administrador del Sistema</span>
+                </div>
+            </div>
+            <div class="profile-details">
+                <div class="detail-row">
+                    <label>Nombre Completo:</label>
+                    <span>Administrador SGPE</span>
+                </div>
+                <div class="detail-row">
+                    <label>Email:</label>
+                    <span>admin@sgpe.com</span>
+                </div>
+                <div class="detail-row">
+                    <label>Rol:</label>
+                    <span>Administrador</span>
+                </div>
+                <div class="detail-row">
+                    <label>Último acceso:</label>
+                    <span>Hoy a las ${new Date().toLocaleTimeString()}</span>
+                </div>
+                <div class="detail-row">
+                    <label>Cuenta creada:</label>
+                    <span>1 de Enero, 2024</span>
+                </div>
+            </div>
+            <div class="profile-actions">
+                <button class="btn-primary" onclick="showEditProfileModal(); closeModal('profile-modal');">
+                    <i class="fas fa-edit"></i> Editar Perfil
+                </button>
+                <button class="btn-secondary" onclick="closeModal('profile-modal');">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    `);
+    
+    addProfileStyles();
+    console.log('Profile modal created successfully');
+    } catch (error) {
+        console.error('Error creating profile modal:', error);
+    }
+}
+
+// ===== MODAL DE EDITAR PERFIL =====
+function showEditProfileModal() {
+    const modal = createModal('edit-profile-modal', 'Editar Perfil', `
+        <form class="edit-profile-form" onsubmit="saveProfile(event)">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit-name">Nombre Completo</label>
+                    <input type="text" id="edit-name" value="Administrador SGPE" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-email">Email</label>
+                    <input type="email" id="edit-email" value="admin@sgpe.com" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit-phone">Teléfono</label>
+                    <input type="tel" id="edit-phone" placeholder="+1 (809) 000-0000">
+                </div>
+                <div class="form-group">
+                    <label for="edit-company">Empresa</label>
+                    <input type="text" id="edit-company" placeholder="Mi Empresa">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="edit-bio">Biografía</label>
+                <textarea id="edit-bio" rows="3" placeholder="Cuéntanos sobre ti..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Cambiar Contraseña</label>
+                <div class="password-group">
+                    <input type="password" id="current-password" placeholder="Contraseña actual">
+                    <input type="password" id="new-password" placeholder="Nueva contraseña">
+                    <input type="password" id="confirm-password" placeholder="Confirmar contraseña">
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+                <button type="button" class="btn-secondary" onclick="closeModal('edit-profile-modal');">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    `);
+    
+    addEditProfileStyles();
+}
+
+// ===== MODAL DE CONFIGURACIÓN =====
+function showSettingsModal() {
+    console.log('showSettingsModal() called');
+    
+    try {
+        const modal = createModal('settings-modal', 'Configuración del Sistema', `
+        <div class="settings-content">
+            <div class="settings-tabs">
+                <button class="tab-btn active" onclick="showSettingsTab('general')">General</button>
+                <button class="tab-btn" onclick="showSettingsTab('notifications')">Notificaciones</button>
+                <button class="tab-btn" onclick="showSettingsTab('security')">Seguridad</button>
+            </div>
+            
+            <!-- Tab General -->
+            <div id="settings-general" class="settings-tab active">
+                <h4>Configuración General</h4>
+                <div class="setting-item">
+                    <label>Idioma del Sistema</label>
+                    <select>
+                        <option value="es" selected>Español</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>Zona Horaria</label>
+                    <select>
+                        <option value="America/Santo_Domingo" selected>América/Santo Domingo</option>
+                        <option value="America/New_York">América/Nueva York</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>Moneda</label>
+                    <select>
+                        <option value="DOP" selected>Peso Dominicano (DOP)</option>
+                        <option value="USD">Dólar Americano (USD)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Tab Notificaciones -->
+            <div id="settings-notifications" class="settings-tab">
+                <h4>Notificaciones</h4>
+                <div class="setting-item">
+                    <label class="checkbox-label">
+                        <input type="checkbox" checked> Notificaciones del navegador
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label class="checkbox-label">
+                        <input type="checkbox" checked> Alertas de stock bajo
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label class="checkbox-label">
+                        <input type="checkbox" checked> Nuevas facturas
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label class="checkbox-label">
+                        <input type="checkbox"> Resumen diario por email
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Tab Seguridad -->
+            <div id="settings-security" class="settings-tab">
+                <h4>Seguridad</h4>
+                <div class="setting-item">
+                    <label class="checkbox-label">
+                        <input type="checkbox" checked> Autenticación de dos factores
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label class="checkbox-label">
+                        <input type="checkbox" checked> Cerrar sesión automáticamente
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label>Tiempo de inactividad (minutos)</label>
+                    <input type="number" value="30" min="5" max="120">
+                </div>
+            </div>
+            
+            <div class="settings-actions">
+                <button class="btn-primary" onclick="saveSettings()">
+                    <i class="fas fa-save"></i> Guardar Configuración
+                </button>
+                <button class="btn-secondary" onclick="closeModal('settings-modal')">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    `);
+    
+    addSettingsStyles();
+    console.log('Settings modal created successfully');
+    } catch (error) {
+        console.error('Error creating settings modal:', error);
+    }
+}
+
+// ===== MODAL DE NOTIFICACIONES =====
+function showNotificationsModal() {
+    const modal = createModal('notifications-modal', 'Centro de Notificaciones', `
+        <div class="notifications-content">
+            <div class="notifications-header">
+                <div class="notifications-stats">
+                    <span class="notification-count">5 nuevas</span>
+                    <button class="mark-all-read" onclick="markAllAsRead()">
+                        <i class="fas fa-check-double"></i> Marcar todo como leído
+                    </button>
+                </div>
+                <div class="notification-filters">
+                    <button class="filter-btn active" data-filter="all">Todas</button>
+                    <button class="filter-btn" data-filter="unread">No leídas</button>
+                    <button class="filter-btn" data-filter="important">Importantes</button>
+                </div>
+            </div>
+            
+            <div class="notifications-list">
+                <div class="notification-item unread important">
+                    <div class="notification-icon error">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h4>Stock crítico detectado</h4>
+                        <p>3 productos tienen stock por debajo del mínimo establecido</p>
+                        <span class="notification-time">Hace 5 minutos</span>
+                    </div>
+                    <div class="notification-actions">
+                        <button class="btn-small primary">Ver productos</button>
+                        <button class="btn-small secondary">Marcar leída</button>
+                    </div>
+                </div>
+                
+                <div class="notification-item unread">
+                    <div class="notification-icon success">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h4>Nueva factura creada</h4>
+                        <p>Factura #F-2024-001 por $1,250.00 ha sido generada</p>
+                        <span class="notification-time">Hace 15 minutos</span>
+                    </div>
+                    <div class="notification-actions">
+                        <button class="btn-small primary">Ver factura</button>
+                        <button class="btn-small secondary">Marcar leída</button>
+                    </div>
+                </div>
+                
+                <div class="notification-item">
+                    <div class="notification-icon info">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h4>Nuevo cliente registrado</h4>
+                        <p>Ana María López se ha registrado en el sistema</p>
+                        <span class="notification-time">Hace 1 hora</span>
+                    </div>
+                    <div class="notification-actions">
+                        <button class="btn-small primary">Ver cliente</button>
+                    </div>
+                </div>
+                
+                <div class="notification-item">
+                    <div class="notification-icon warning">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h4>Factura próxima a vencer</h4>
+                        <p>La factura #F-2024-002 vence en 3 días</p>
+                        <span class="notification-time">Hace 2 horas</span>
+                    </div>
+                    <div class="notification-actions">
+                        <button class="btn-small primary">Enviar recordatorio</button>
+                    </div>
+                </div>
+                
+                <div class="notification-item">
+                    <div class="notification-icon success">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h4>Reporte semanal disponible</h4>
+                        <p>El reporte de ventas de la semana está listo para descargar</p>
+                        <span class="notification-time">Hace 3 horas</span>
+                    </div>
+                    <div class="notification-actions">
+                        <button class="btn-small primary">Descargar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `);
+    
+    addNotificationsStyles();
+    
+    // Inicializar filtros después de crear el modal
+    setTimeout(() => {
+        initNotificationFilters();
+    }, 100);
+}
+
+// ===== FUNCIONES DE CONFIGURACIÓN =====
+function saveSettings() {
+    showUserActionNotification('Configuración guardada exitosamente', 'fas fa-check-circle');
+    closeModal('settings-modal');
+}
+
+// ===== FUNCIONES DE NOTIFICACIONES =====
+function markAllAsRead() {
+    const notifications = document.querySelectorAll('.notification-item.unread');
+    notifications.forEach(notification => {
+        notification.classList.remove('unread');
+        notification.classList.add('read');
+    });
+    
+    // Actualizar contador
+    const countElement = document.querySelector('.notification-count');
+    if (countElement) {
+        countElement.textContent = '0 nuevas';
+    }
+    
+    showUserActionNotification('Todas las notificaciones marcadas como leídas', 'fas fa-check-double');
+}
+
+function markAsRead(button) {
+    const notification = button.closest('.notification-item');
+    if (notification) {
+        notification.classList.remove('unread');
+        notification.classList.add('read');
+        button.style.display = 'none';
+    }
+}
+
+function handleLogout() {
+    // Confirmar logout
+    if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+        // Limpiar localStorage
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        
+        // Mostrar mensaje de despedida
+        showLogoutMessage();
+        
+        // Redirigir al login después de un breve delay
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 1500);
+    }
+}
+
+function showUserActionNotification(action, icon) {
+    // Crear elemento de notificación
+    const notification = document.createElement('div');
+    notification.className = 'user-action-notification';
+    notification.innerHTML = `
+        <i class="${icon}"></i>
+        <span>${action}</span>
+    `;
+    
+    // Agregar estilos dinámicamente
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border-left: 4px solid var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 10000;
+        transform: translateX(400px);
+        transition: transform 0.3s ease;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text);
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animar entrada
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Remover después de 3 segundos
+    setTimeout(() => {
+        notification.style.transform = 'translateX(400px)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+function showLogoutMessage() {
+    const message = document.createElement('div');
+    message.className = 'logout-message';
+    message.innerHTML = `
+        <div class="logout-content">
+            <i class="fas fa-wave-square"></i>
+            <h3>¡Hasta pronto!</h3>
+            <p>Sesión cerrada exitosamente</p>
+        </div>
+    `;
+    
+    message.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    `;
+    
+    const content = message.querySelector('.logout-content');
+    content.style.cssText = `
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        text-align: center;
+        transform: translateY(-20px);
+        transition: transform 0.3s ease;
+    `;
+    
+    content.querySelector('i').style.cssText = `
+        font-size: 48px;
+        color: var(--primary);
+        margin-bottom: 16px;
+    `;
+    
+    content.querySelector('h3').style.cssText = `
+        margin: 0 0 8px 0;
+        color: var(--text);
+        font-size: 24px;
+        font-weight: 600;
+    `;
+    
+    content.querySelector('p').style.cssText = `
+        margin: 0;
+        color: var(--text-light);
+        font-size: 16px;
+    `;
+    
+    document.body.appendChild(message);
+    
+    setTimeout(() => {
+        message.style.opacity = '1';
+        content.style.transform = 'translateY(0)';
+    }, 100);
+}
+
+function showHelpModal() {
+    const modal = document.createElement('div');
+    modal.className = 'help-modal';
+    modal.innerHTML = `
+        <div class="help-modal-content">
+            <div class="help-header">
+                <h3><i class="fas fa-question-circle"></i> Ayuda y Soporte</h3>
+                <button class="help-close">&times;</button>
+            </div>
+            <div class="help-body">
+                <div class="help-section">
+                    <h4><i class="fas fa-book"></i> Guía Rápida</h4>
+                    <ul>
+                        <li>Usa el <strong>Dashboard</strong> para ver resúmenes de tu negocio</li>
+                        <li>Gestiona tus <strong>Productos</strong> desde el inventario</li>
+                        <li>Administra <strong>Clientes</strong> y sus datos</li>
+                        <li>Crea y gestiona <strong>Facturas</strong> fácilmente</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h4><i class="fas fa-keyboard"></i> Atajos de Teclado</h4>
+                    <ul>
+                        <li><kbd>Ctrl + K</kbd> - Búsqueda rápida</li>
+                        <li><kbd>Ctrl + N</kbd> - Nueva factura</li>
+                        <li><kbd>Ctrl + I</kbd> - Inventario</li>
+                        <li><kbd>Ctrl + C</kbd> - Clientes</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h4><i class="fas fa-life-ring"></i> Soporte</h4>
+                    <p>¿Necesitas ayuda adicional?</p>
+                    <div class="help-actions">
+                        <button class="help-btn primary">
+                            <i class="fas fa-envelope"></i> Contactar Soporte
+                        </button>
+                        <button class="help-btn secondary">
+                            <i class="fas fa-file-alt"></i> Documentación
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Estilos del modal
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    `;
+    
+    const content = modal.querySelector('.help-modal-content');
+    content.style.cssText = `
+        background: white;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 80vh;
+        overflow-y: auto;
+        transform: translateY(-20px);
+        transition: transform 0.3s ease;
+    `;
+    
+    // Añadir más estilos...
+    addHelpModalStyles(modal);
+    
+    document.body.appendChild(modal);
+    
+    // Animar entrada
+    setTimeout(() => {
+        modal.style.opacity = '1';
+        content.style.transform = 'translateY(0)';
+    }, 100);
+    
+    // Manejar cierre
+    const closeBtn = modal.querySelector('.help-close');
+    closeBtn.addEventListener('click', () => closeHelpModal(modal));
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeHelpModal(modal);
+        }
+    });
+}
+
+function addHelpModalStyles(modal) {
+    const style = document.createElement('style');
+    style.textContent = `
+        .help-header {
+            padding: 24px 24px 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-light);
+            margin-bottom: 24px;
+        }
+        .help-header h3 {
+            margin: 0;
+            color: var(--text);
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .help-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-light);
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .help-close:hover {
+            background: var(--light);
+            color: var(--text);
+        }
+        .help-body {
+            padding: 0 24px 24px 24px;
+        }
+        .help-section {
+            margin-bottom: 24px;
+        }
+        .help-section:last-child {
+            margin-bottom: 0;
+        }
+        .help-section h4 {
+            margin: 0 0 12px 0;
+            color: var(--text);
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .help-section ul {
+            margin: 0;
+            padding-left: 20px;
+            color: var(--text-light);
+        }
+        .help-section li {
+            margin-bottom: 8px;
+        }
+        .help-section kbd {
+            background: var(--light);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: monospace;
+            border: 1px solid var(--border-light);
+        }
+        .help-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .help-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .help-btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+        .help-btn.primary:hover {
+            background: var(--primary-dark);
+        }
+        .help-btn.secondary {
+            background: var(--light);
+            color: var(--text);
+            border: 1px solid var(--border-light);
+        }
+        .help-btn.secondary:hover {
+            background: var(--border-light);
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+function closeHelpModal(modal) {
+    modal.style.opacity = '0';
+    const content = modal.querySelector('.help-modal-content');
+    content.style.transform = 'translateY(-20px)';
+    
+    setTimeout(() => {
+        if (modal.parentNode) {
+            modal.parentNode.removeChild(modal);
+        }
+    }, 300);
+}
+
+// ===== FUNCIONES AUXILIARES PARA MODALES =====
+function createModal(id, title, content) {
+    // Cerrar modal existente si hay uno
+    const existingModal = document.getElementById(id);
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    const modal = document.createElement('div');
+    modal.id = id;
+    modal.className = 'custom-modal';
+    modal.innerHTML = `
+        <div class="modal-overlay" onclick="closeModal('${id}')"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>${title}</h3>
+                <button class="modal-close" onclick="closeModal('${id}')">&times;</button>
+            </div>
+            <div class="modal-body">
+                ${content}
+            </div>
+        </div>
+    `;
+    
+    // Estilos base del modal
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Animar entrada
+    setTimeout(() => {
+        modal.style.opacity = '1';
+    }, 10);
+    
+    return modal;
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.opacity = '0';
+        setTimeout(() => {
+            if (modal.parentNode) {
+                modal.parentNode.removeChild(modal);
+            }
+        }, 300);
+    }
+}
+
+// ===== FUNCIONES DE GUARDADO =====
+function saveProfile(event) {
+    event.preventDefault();
+    
+    const formData = {
+        name: document.getElementById('edit-name').value,
+        email: document.getElementById('edit-email').value,
+        phone: document.getElementById('edit-phone').value,
+        company: document.getElementById('edit-company').value,
+        bio: document.getElementById('edit-bio').value,
+        currentPassword: document.getElementById('current-password').value,
+        newPassword: document.getElementById('new-password').value,
+        confirmPassword: document.getElementById('confirm-password').value
+    };
+    
+    // Validar contraseñas si se están cambiando
+    if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
+        alert('Las contraseñas no coinciden');
+        return;
+    }
+    
+    // Simular guardado
+    showSuccessMessage('Perfil actualizado correctamente');
+    closeModal('edit-profile-modal');
+    
+    // Actualizar nombre en el header si cambió
+    if (formData.name) {
+        const userNameEl = document.querySelector('.user-name');
+        if (userNameEl) {
+            userNameEl.textContent = formData.name;
+        }
+    }
+}
+
+function saveSettings() {
+    // Recopilar todas las configuraciones
+// ===== FUNCIONES DE CONFIGURACIÓN =====
+function saveSettings() {
+    const settings = getSettings();
+    showUserActionNotification('Configuración guardada exitosamente', 'fas fa-check-circle');
+    closeModal('settings-modal');
+}
+
+function getSettings() {
+    const settings = {
+        language: document.querySelector('#settings-general select').value,
+        timezone: document.querySelector('#settings-general select:nth-of-type(2)').value,
+        currency: document.querySelector('#settings-general select:nth-of-type(3)').value,
+        // Configuraciones de notificaciones y seguridad
+        browserNotifications: document.querySelector('#settings-notifications input[type="checkbox"]').checked,
+        stockAlerts: document.querySelector('#settings-notifications input[type="checkbox"]:nth-of-type(2)').checked,
+        invoiceAlerts: document.querySelector('#settings-notifications input[type="checkbox"]:nth-of-type(3)').checked,
+        emailSummary: document.querySelector('#settings-notifications input[type="checkbox"]:nth-of-type(4)').checked
+    };
+    
+    // Guardar en localStorage
+    localStorage.setItem('sgpe-settings', JSON.stringify(settings));
+    
+    return settings;
+}
+
+function markAllAsRead() {
+    const unreadItems = document.querySelectorAll('.notification-item.unread');
+    unreadItems.forEach(item => {
+        item.classList.remove('unread');
+    });
+    
+    const countEl = document.querySelector('.notification-count');
+    if (countEl) {
+        countEl.textContent = '0 nuevas';
+    }
+    
+    showSuccessMessage('Todas las notificaciones marcadas como leídas');
+}
+
+function showSettingsTab(tabName) {
+    // Remover active de todos los tabs y botones
+    document.querySelectorAll('.settings-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Activar el tab seleccionado
+    const targetTab = document.getElementById(`settings-${tabName}`);
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
+    
+    // Activar el botón correspondiente
+    const clickedBtn = document.querySelector(`[onclick="showSettingsTab('${tabName}')"]`);
+    if (clickedBtn) {
+        clickedBtn.classList.add('active');
+    }
+}
+
+// Agregar event listeners para filtros de notificaciones
+function initNotificationFilters() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remover active de todos los filtros
+            filterButtons.forEach(b => b.classList.remove('active'));
+            // Agregar active al filtro clickeado
+            this.classList.add('active');
+            
+            const filter = this.dataset.filter;
+            filterNotifications(filter);
+        });
+    });
+}
+
+function filterNotifications(filter) {
+    const notifications = document.querySelectorAll('.notification-item');
+    
+    notifications.forEach(notification => {
+        let shouldShow = true;
+        
+        switch(filter) {
+            case 'unread':
+                shouldShow = notification.classList.contains('unread');
+                break;
+            case 'important':
+                shouldShow = notification.classList.contains('important');
+                break;
+            case 'all':
+            default:
+                shouldShow = true;
+                break;
+        }
+        
+        notification.style.display = shouldShow ? 'flex' : 'none';
+    });
+    
+    showSuccessMessage(`Filtro "${filter}" aplicado`);
+}
+
+function showSuccessMessage(message) {
+    const notification = document.createElement('div');
+    notification.className = 'success-notification';
+    notification.innerHTML = `
+        <i class="fas fa-check-circle"></i>
+        <span>${message}</span>
+    `;
+    
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #10b981;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 10001;
+        transform: translateX(400px);
+        transition: transform 0.3s ease;
+        font-size: 14px;
+        font-weight: 500;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(400px)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+console.log('Dashboard script cargado');

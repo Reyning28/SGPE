@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGPE - Sistema de Gestión para Pequeñas Empresas</title>
+    <link rel="stylesheet" href="dashboard-new.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="bg-decoration">
+        <div class="bg-circle bg-circle-1"></div>
+        <div class="bg-circle bg-circle-2"></div>
+        <div class="bg-circle bg-circle-3"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-cube"></i>
+                </div>
+                <div class="logo-text">
+                    <h2>SGPE</h2>
+                    <span>Sistema de Gestión</span>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">PRINCIPAL</div>
+                <ul class="nav-list">
+                    <li class="nav-item active">
+                        <a href="dashboard.html" class="nav-link">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                            <div class="nav-indicator"></div>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="inventario.html" class="nav-link">
+                            <i class="nav-icon fas fa-boxes"></i>
+                            <span>Inventario</span>
+                            <span class="nav-badge">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="clientes.html" class="nav-link">
+                            <i class="nav-icon fas fa-users"></i>
+                            <span>Clientes</span>
+                            <span class="nav-badge">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="facturacion.html" class="nav-link">
+                            <i class="nav-icon fas fa-file-invoice"></i>
+                            <span>Facturación</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="breadcrumb">
+                    <span class="breadcrumb-item">SGPE</span>
+                    <i class="fas fa-chevron-right"></i>
+                    <span class="breadcrumb-item current">Dashboard</span>
+                </div>
+            </div>
+            
+            <div class="header-center">
+                <div class="search-container">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Buscar productos, clientes, facturas...">
+                        <div class="search-shortcut">⌘K</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div class="header-actions">
+                    <button class="action-btn" title="Notificaciones">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-dot"></span>
+                    </button>
+                    <button class="action-btn" title="Mensajes">
+                        <i class="fas fa-envelope"></i>
+                    </button>
+                    <button class="action-btn" title="Configuración">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+                
+                <div class="user-menu">
+                    <div class="user-avatar">
+                        <img src="/placeholder.svg?height=40&width=40" alt="Usuario">
+                        <div class="status-indicator online"></div>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">admin@sgpe.com</div>
+                        <div class="user-role">Administrador</div>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+
+                <div class="status-info">
+                    <i class="fas fa-circle status-online"></i>
+                    <span>Conectado</span>
+                    <div class="dropdown-arrow">
+                        <a href="#" class="dropdown-link">
+                            <i class="fas fa-user"></i> Mi Perfil
+                        </a>
+                        <a href="#" class="dropdown-link">
+                            <i class="fas fa-cog"></i> Configuración
+                        </a>
+                        <a href="#" class="dropdown-link">
+                            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Container -->
+        <div class="dashboard-container">
+            <!-- Welcome Section -->
+            <section class="welcome-section">
+                <div class="welcome-content">
+                    <div class="welcome-text">
+                        <h1>Bienvenido al Control SGPE</h1>
+                        <p>Panel de control completo de tu negocio</p>
+                    </div>
+                    <div class="welcome-actions">
+                        <button class="primary-btn">
+                            <i class="fas fa-file-invoice"></i>
+                            Nueva Factura
+                        </button>
+                        <button class="secondary-btn">
+                            <i class="fas fa-plus"></i>
+                            Nuevo Producto
+                        </button>
+                    </div>
+                </div>
+                <div class="welcome-stats">
+                    <div class="quick-stat">
+                        <i class="fas fa-chart-line"></i>
+                        <span class="quick-stat-value" id="ventasHoy">RD$4,176.00</span>
+                        <span class="quick-stat-label">Ventas Hoy</span>
+                    </div>
+                    <div class="quick-stat">
+                        <i class="fas fa-file-invoice"></i>
+                        <span class="quick-stat-value" id="facturasHoy">2</span>
+                        <span class="quick-stat-label">Facturas Hoy</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats Section -->
+            <section class="stats-section">
+                <div class="stats-grid">
+                    <!-- Ventas Card -->
+                    <div class="stat-card ventas">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <span class="stat-period">ESTE MES</span>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="ventasMes">RD$0.00</h3>
+                            <p>Total en Ventas</p>
+                            <div class="stat-trend positive" id="ventasTrend">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>0%</span>
+                                <small>vs mes anterior</small>
+                            </div>
+                        </div>
+                        <div class="stat-footer">
+                            <a href="facturacion.html" class="stat-link">Ver facturas</a>
+                        </div>
+                    </div>
+
+                    <!-- Inventario Card -->
+                    <div class="stat-card inventario">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-boxes"></i>
+                            </div>
+                            <span class="stat-period">INVENTARIO</span>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalProductos">5</h3>
+                            <p>Productos Registrados</p>
+                            <div class="stat-trend warning" id="stockTrend">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span id="stockBajo">0</span>
+                                <small>con stock bajo</small>
+                            </div>
+                        </div>
+                        <div class="stat-footer">
+                            <a href="inventario.html" class="stat-link">Ver inventario</a>
+                        </div>
+                    </div>
+
+                    <!-- Clientes Card -->
+                    <div class="stat-card clientes">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <span class="stat-period">CLIENTES</span>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalClientes">0</h3>
+                            <p>Clientes Registrados</p>
+                            <div class="stat-trend neutral" id="clientesTrend">
+                                <i class="fas fa-user-plus"></i>
+                                <span id="clientesNuevos">0</span>
+                                <small>nuevos este mes</small>
+                            </div>
+                        </div>
+                        <div class="stat-footer">
+                            <a href="clientes.html" class="stat-link">Ver clientes</a>
+                        </div>
+                    </div>
+
+                    <!-- Facturas Card -->
+                    <div class="stat-card facturas">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-file-invoice"></i>
+                            </div>
+                            <span class="stat-period">ESTE MES</span>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalFacturas">6</h3>
+                            <p>Facturas Emitidas</p>
+                            <div class="stat-trend neutral" id="facturasTrend">
+                                <i class="fas fa-clock"></i>
+                                <span id="facturasPendientes">3</span>
+                                <small>pendientes</small>
+                            </div>
+                        </div>
+                        <div class="stat-footer">
+                            <a href="facturacion.html" class="stat-link">Ver facturas</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="dashboard-new.js"></script>
+</body>
+</html>

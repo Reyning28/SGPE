@@ -15,23 +15,103 @@
       <nav>
         <a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a>
         <a href="clientes.html"><i class="fas fa-users"></i> Clientes</a>
-        <a href="producto.html"><i class="fas fa-box"></i> Productos</a>
-        <a href="#" class="active"><i class="fas fa-file-invoice"></i> Facturación</a>
+        <a href="producto.html"><i class="fas fa-box"></i> Inventario</a>
+        
         <a href="login.html"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
       </nav>
     </aside>
-
+ 
     <main class="main">
       <header class="main-header">
-        <h1>Facturación</h1>
-        <button class="btn-primary"><i class="fas fa-file-circle-plus"></i> Nueva Factura</button>
+        <h1><i class="fas fa-file-invoice"></i> Facturación</h1>
+        <div class="header-actions">
+          <button class="btn-primary"><i class="fas fa-file-circle-plus"></i> Nueva Factura</button>
+        </div>
       </header>
-
-      <section class="client-list">
+ 
+      <!-- Tarjetas de estadísticas -->
+      <section class="stats-cards">
+        <div class="stat-card" data-stat="total-facturas">
+          <div class="stat-icon purple">
+            <i class="fas fa-file-invoice"></i>
+          </div>
+          <div class="stat-content">
+            <h3>Total Facturas</h3>
+            <p class="stat-value">0</p>
+          </div>
+        </div>
+       
+        <div class="stat-card" data-stat="total-ventas">
+          <div class="stat-icon pink">
+            <i class="fas fa-dollar-sign"></i>
+          </div>
+          <div class="stat-content">
+            <h3>Total Ventas</h3>
+            <p class="stat-value">0.00 DOP</p>
+          </div>
+        </div>
+       
+        <div class="stat-card" data-stat="pendientes">
+          <div class="stat-icon blue">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="stat-content">
+            <h3>Pendientes</h3>
+            <p class="stat-value">0</p>
+          </div>
+        </div>
+       
+        <div class="stat-card" data-stat="pagadas">
+          <div class="stat-icon green">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="stat-content">
+            <h3>Pagadas</h3>
+            <p class="stat-value">0</p>
+          </div>
+        </div>
+       
+        <div class="stat-card" data-stat="canceladas">
+          <div class="stat-icon red">
+            <i class="fas fa-times-circle"></i>
+          </div>
+          <div class="stat-content">
+            <h3>Canceladas</h3>
+            <p class="stat-value">0</p>
+          </div>
+        </div>
+      </section>
+ 
+      <!-- Filtros y búsqueda -->
+      <section class="filters-section">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Buscar factura por número o cliente...">
+        </div>
+       
+        <div class="filters">
+          <select>
+            <option value="">Todos los estados</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="pagada">Pagada</option>
+            <option value="cancelada">Cancelada</option>
+          </select>
+        </div>
+        
+        <div class="search-results" id="search-results">
+          <span class="results-text"></span>
+          <button class="clear-search" title="Limpiar búsqueda">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </section>
+ 
+      <!-- Tabla de facturas -->
+      <section class="facturas-table">
         <table>
           <thead>
             <tr>
-              <th># Factura</th>
+              <th>Número</th>
               <th>Cliente</th>
               <th>Fecha</th>
               <th>Total</th>
@@ -40,34 +120,17 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>F-00123</td>
-              <td>Juan Pérez</td>
-              <td>2025-07-21</td>
-              <td>$5,200.00</td>
-              <td><span style="color:green;font-weight:bold">Pagada</span></td>
-              <td>
-                <button class="edit"><i class="fas fa-eye"></i></button>
-                <button class="delete"><i class="fas fa-trash"></i></button>
-              </td>
-            </tr>
-            <tr>
-              <td>F-00124</td>
-              <td>Ana Gómez</td>
-              <td>2025-07-20</td>
-              <td>$3,100.00</td>
-              <td><span style="color:orange;font-weight:bold">Pendiente</span></td>
-              <td>
-                <button class="edit"><i class="fas fa-eye"></i></button>
-                <button class="delete"><i class="fas fa-trash"></i></button>
-              </td>
-            </tr>
+            <!-- Las facturas se cargarán dinámicamente aquí -->
           </tbody>
         </table>
       </section>
     </main>
   </div>
+ 
+  <!-- Scripts -->
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
   <script src="facturacion.js"></script>
-
 </body>
 </html>
+ 

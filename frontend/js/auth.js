@@ -24,6 +24,11 @@ class AuthMiddleware {
     }
   }
 
+  // Obtener el token actual
+  static getToken() {
+    return localStorage.getItem('token');
+  }
+
   // Verificar si el token ha expirado
   static isTokenExpired() {
     const token = localStorage.getItem('token');

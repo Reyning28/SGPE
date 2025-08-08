@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGPE - Dashboard</title>
+    <link rel="stylesheet" href="dashboard-simple.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <h2>SGPE</h2>
+                <span>Sistema de Gestión</span>
+            </div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item active">
+                    <a href="#dashboard" class="nav-link">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="producto.html" class="nav-link">
+                        <i class="fas fa-boxes"></i>
+                        <span>Inventario</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="clientes.html" class="nav-link">
+                        <i class="fas fa-users"></i>
+                        <span>Clientes</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="facturacion.html" class="nav-link">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>Facturación</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>Dashboard</h1>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Buscar...">
+                    </div>
+                    <div class="user-menu">
+                        <span class="user-name">Administrador</span>
+                        <button class="logout-btn" onclick="handleLogout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-container">
+            <!-- Stats Cards -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Ventas del Mes</h3>
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-value" id="ventas-mes">RD$ 0</div>
+                    <div class="stat-change positive" id="ventas-change">+12.5% vs mes anterior</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Productos en Stock</h3>
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <div class="stat-value" id="total-productos">0</div>
+                    <div class="stat-change warning" id="stock-bajo">5 con stock bajo</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Clientes Activos</h3>
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value" id="total-clientes">0</div>
+                    <div class="stat-change positive" id="clientes-nuevos">8 nuevos este mes</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Facturas</h3>
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div class="stat-value" id="total-facturas">0</div>
+                    <div class="stat-change neutral" id="facturas-pendientes">12 pendientes</div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Ventas de los Últimos 7 Días</h3>
+                    </div>
+                    <canvas id="ventasChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Productos por Categoría</h3>
+                    </div>
+                    <canvas id="categoriasChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Recent Activity -->
+            <section class="activity-section">
+                <div class="activity-container">
+                    <div class="activity-header">
+                        <h3>Actividad Reciente</h3>
+                        <a href="facturacion.html" class="view-all-btn">Ver todo</a>
+                    </div>
+                    <div class="activity-list" id="activity-list">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <h3>Acciones Rápidas</h3>
+                    <div class="actions-grid">
+                        <button class="action-btn" onclick="window.location.href='facturacion.html'">
+                            <i class="fas fa-plus"></i>
+                            <span>Nueva Factura</span>
+                        </button>
+                        <button class="action-btn" onclick="window.location.href='producto.html'">
+                            <i class="fas fa-box"></i>
+                            <span>Nuevo Producto</span>
+                        </button>
+                        <button class="action-btn" onclick="window.location.href='clientes.html'">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Nuevo Cliente</span>
+                        </button>
+                        <button class="action-btn" onclick="generateReport()">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Generar Reporte</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Alerts Section -->
+            <section class="alerts-section" id="alerts-section">
+                <h3>Alertas del Sistema</h3>
+                <div class="alerts-list" id="alerts-list">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="dashboard-simple.js"></script>
+</body>
+</html>

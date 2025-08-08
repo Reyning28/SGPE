@@ -3,15 +3,23 @@ const DetalleFactura = require('../models/DetalleFactura');
 const Cliente = require('../models/Cliente');
 const Producto = require('../models/Producto');
 const { Op } = require('sequelize');
+const db = require('../config/database');
 
 const facturaController = {
   // Obtener todas las facturas
   async getFacturas(req, res) {
     try {
-      const { page = 1, limit = 10, estado, clienteId, fechaInicio, fechaFin } = req.query;
+      const { page = 1, limit = 10, estado, clienteId, fechaInicio, fechaFin, search } = req.query;
       const offset = (page - 1) * limit;
       
       let whereClause = {};
+      let includeClause = [
+        {
+          model: Cliente,
+          as: 'cliente',
+          attributes: ['id', 'nombre', 'correo', 'telefono']
+        }
+      ];
       
       // Filtro por estado
       if (estado) {
@@ -30,15 +38,44 @@ const facturaController = {
         };
       }
       
+      // Filtro de búsqueda por número de factura o nombre de cliente
+      if (search) {
+        // Búsqueda con prioridad: exacta primero, luego parcial
+        whereClause[Op.or] = [
+          // Coincidencia exacta en número de factura (mayor prioridad)
+          {
+            numero: {
+              [Op.eq]: search
+            }
+          },
+          // Coincidencia exacta en nombre de cliente
+          {
+            '$cliente.nombre$': {
+              [Op.eq]: search
+            }
+          },
+          // Coincidencias parciales (menor prioridad)
+          {
+            numero: {
+              [Op.like]: `%${search}%`
+            }
+          },
+          {
+            '$cliente.nombre$': {
+              [Op.like]: `%${search}%`
+            }
+          }
+        ];
+      }
+      
       const facturas = await Factura.findAndCountAll({
         where: whereClause,
-        include: [
-          {
-            model: Cliente,
-            as: 'cliente',
-            attributes: ['id', 'nombre', 'correo', 'telefono']
-          }
+        attributes: [
+          'id', 'numero', 'fecha', 'clienteId', 'subtotal', 
+          'impuesto', 'total', 'estado', 'metodoPago', 'notas', 
+          'fechaVencimiento', 'createdAt', 'updatedAt'
         ],
+        include: includeClause,
         limit: parseInt(limit),
         offset: parseInt(offset),
         order: [['fecha', 'DESC']]
@@ -67,6 +104,11 @@ const facturaController = {
       const { id } = req.params;
       
       const factura = await Factura.findByPk(id, {
+        attributes: [
+          'id', 'numero', 'fecha', 'clienteId', 'subtotal', 
+          'impuesto', 'total', 'estado', 'metodoPago', 'notas', 
+          'fechaVencimiento', 'createdAt', 'updatedAt'
+        ],
         include: [
           {
             model: Cliente,
@@ -124,7 +166,7 @@ const facturaController = {
       
       // Calcular totales
       let subtotal = 0;
-      const impuesto = 0.16; // 16% IVA
+      const itbis = 0.18; // 18% ITBIS
       
       // Validar productos y calcular subtotal
       for (const detalle of detalles) {
@@ -148,8 +190,8 @@ const facturaController = {
         subtotal += detalle.subtotal;
       }
       
-      const totalImpuesto = subtotal * impuesto;
-      const total = subtotal + totalImpuesto;
+      const totalItbis = subtotal * itbis;
+      const total = subtotal + totalItbis;
       
       // Generar número de factura
       const ultimaFactura = await Factura.findOne({
@@ -167,11 +209,11 @@ const facturaController = {
         numero: numeroFactura,
         clienteId,
         subtotal,
-        impuesto: totalImpuesto,
+        impuesto: totalItbis,
         total,
         metodoPago,
         notas,
-        fechaVencimiento: fechaVencimiento ? new Date(fechaVencimiento) : null
+        fechaVencimiento: fechaVencimiento ? new Date(fechaVencimiento + 'T12:00:00') : null
       });
       
       // Crear los detalles de la factura
@@ -297,6 +339,59 @@ const facturaController = {
     }
   },
 
+  // Actualizar estado de una factura
+  async updateEstado(req, res) {
+    try {
+      const { id } = req.params;
+      const { estado } = req.body;
+      
+      // Validar que el estado es válido
+      const estadosValidos = ['pendiente', 'pagada', 'cancelada'];
+      if (!estadosValidos.includes(estado)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Estado no válido. Los estados permitidos son: pendiente, pagada, cancelada'
+        });
+      }
+      
+      // Buscar la factura
+      const factura = await Factura.findByPk(id);
+      if (!factura) {
+        return res.status(404).json({
+          success: false,
+          message: 'Factura no encontrada'
+        });
+      }
+      
+      // Actualizar el estado
+      await factura.update({ estado });
+      
+      // Devolver la factura actualizada con información del cliente
+      const facturaActualizada = await Factura.findByPk(id, {
+        include: [
+          {
+            model: Cliente,
+            as: 'cliente',
+            attributes: ['id', 'nombre', 'correo', 'telefono']
+          }
+        ]
+      });
+      
+      res.json({
+        success: true,
+        message: `Estado de la factura actualizado a ${estado}`,
+        data: facturaActualizada
+      });
+    } catch (error) {
+      console.error('Error al actualizar estado de factura:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error interno del servidor',
+        error: error.message
+      });
+    }
+  },
+
   // Obtener estadísticas de facturación
   async getEstadisticas(req, res) {
     try {
@@ -309,7 +404,8 @@ const facturaController = {
         };
       }
       
-      const facturas = await Factura.findAll({
+      // Obtener estadísticas agrupadas por estado
+      const facturasPorEstado = await Factura.findAll({
         where: whereClause,
         attributes: [
           'estado',
@@ -319,15 +415,39 @@ const facturaController = {
         group: ['estado']
       });
       
-      const totalVentas = facturas.reduce((sum, f) => sum + parseFloat(f.dataValues.totalVentas || 0), 0);
-      const totalFacturas = facturas.reduce((sum, f) => sum + parseInt(f.dataValues.cantidadFacturas || 0), 0);
+      // Inicializar contadores
+      let totalVentas = 0;
+      let totalFacturas = 0;
+      let pendientes = 0;
+      let pagadas = 0;
+      let canceladas = 0;
+      
+      // Procesar los resultados
+      facturasPorEstado.forEach(fila => {
+        const estado = fila.dataValues.estado;
+        const ventas = parseFloat(fila.dataValues.totalVentas || 0);
+        const cantidad = parseInt(fila.dataValues.cantidadFacturas || 0);
+        
+        totalVentas += ventas;
+        totalFacturas += cantidad;
+        
+        if (estado === 'pendiente') {
+          pendientes = cantidad;
+        } else if (estado === 'pagada') {
+          pagadas = cantidad;
+        } else if (estado === 'cancelada') {
+          canceladas = cantidad;
+        }
+      });
       
       res.json({
         success: true,
         data: {
-          estadisticas: facturas,
           totalVentas,
-          totalFacturas
+          totalFacturas,
+          pendientes,
+          pagadas,
+          canceladas
         }
       });
     } catch (error) {

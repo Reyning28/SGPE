@@ -9,9 +9,9 @@ router.use(authController.verifyToken);
 // Rutas para facturas (protegidas)
 router.get('/', facturaController.getFacturas);
 router.get('/estadisticas', facturaController.getEstadisticas);
-router.get('/:id', facturaController.getFacturaById);
 router.post('/', facturaController.createFactura);
-router.patch('/:id/estado', facturaController.updateEstadoFactura);
+router.get('/:id', facturaController.getFacturaById);
+router.patch('/:id/estado', facturaController.updateEstado);
 router.delete('/:id', facturaController.deleteFactura);
 
 module.exports = router; 

@@ -144,21 +144,16 @@ async function loadProductos() {
 }
 
 async function loadClientes() {
-    console.log(' Cargando clientes...');
+    console.log('👥 Cargando clientes...');
     
     try {
         if (window.ApiService && window.ApiService.ClienteService) {
             const ClienteService = window.ApiService.ClienteService;
-            // Usar la misma lógica que pagina_cliente.js
-            const clientes = await ClienteService.getAll();
+            const response = await ClienteService.getAll();
             
-            // ClienteService.getAll() devuelve directamente el array, no un objeto con success/data
-            if (Array.isArray(clientes)) {
-                dashboardData.clientes = clientes;
+            if (response && response.success) {
+                dashboardData.clientes = response.data || [];
                 console.log('✅ Clientes cargados desde API:', dashboardData.clientes.length);
-            } else {
-                console.warn('Respuesta de clientes no es un array:', clientes);
-                dashboardData.clientes = [];
             }
         } else {
             console.warn('ClienteService no disponible');

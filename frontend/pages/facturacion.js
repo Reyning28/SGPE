@@ -130,11 +130,11 @@ document.addEventListener("DOMContentLoaded", () => {
           updateEstadisticasLocal();
         } else {
           console.error('Error al cargar facturas:', response?.message || 'Respuesta inválida');
-          showNotification('Error al cargar las facturas: ' + (response?.message || 'Respuesta inválida'), 'error');
+          showNotification('🔧 Error al cargar las facturas del servidor', 'error');
         }
       } catch (error) {
         console.error('Error cargando facturas:', error);
-        showNotification('Error al cargar las facturas: ' + (error.message || 'Error desconocido'), 'error');
+        showNotification('🌐 Error de conexión al cargar las facturas', 'error');
       } finally {
         isLoading = false;
         // No mostrar loading para búsquedas suaves
@@ -231,8 +231,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (estadoAnterior === nuevoEstado) return;
 
-      const confirmacion = confirm(
-        `¿Estás seguro de cambiar el estado de la factura a "${nuevoEstado}"?`
+      // Confirmación específica según el estado
+      const confirmaciones = {
+        'Pendiente': '🕐 ¿Marcar esta factura como Pendiente?',
+        'Pagada': '💰 ¿Confirmar que esta factura ha sido pagada?',
+        'Anulada': '❌ ¿Está seguro de anular esta factura? Esta acción cambiará el estado.',
+        'Vencida': '⏰ ¿Marcar esta factura como Vencida?'
+      };
+      
+      const mensajeConfirmacion = confirmaciones[nuevoEstado] || 
+        `¿Está seguro de cambiar el estado de la factura a "${nuevoEstado}"?`;
+
+      // Usar modal de confirmación personalizado
+      const confirmacion = await mostrarConfirmacion(
+        mensajeConfirmacion, 
+        nuevoEstado,
+        '',
+        nuevoEstado.toLowerCase()
       );
 
       if (!confirmacion) {
@@ -264,15 +279,24 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log('Actualizando estadísticas locales después del cambio de estado...');
           updateEstadisticasLocal();
           
-          showNotification(`Estado actualizado a "${nuevoEstado}" exitosamente`, 'success');
+          // Mensaje específico según el estado
+          const mensajesEstado = {
+            'Pendiente': '🕐 Factura marcada como Pendiente',
+            'Pagada': '✅ ¡Factura marcada como Pagada!',
+            'Anulada': '❌ Factura Anulada correctamente',
+            'Vencida': '⏰ Factura marcada como Vencida'
+          };
+          
+          const mensaje = mensajesEstado[nuevoEstado] || `✅ Estado actualizado a "${nuevoEstado}"`;
+          showNotification(mensaje, 'success');
         } else {
           select.value = estadoAnterior;
-          showNotification(response.message || 'Error al actualizar el estado', 'error');
+          showNotification(`❌ ${response.message || 'Error al actualizar el estado'}`, 'error');
         }
       } catch (error) {
         console.error('Error actualizando estado:', error);
         select.value = estadoAnterior;
-        showNotification('Error al actualizar el estado de la factura', 'error');
+        showNotification('🔧 Error de conexión al actualizar el estado de la factura', 'error');
       } finally {
         showLoading(false);
       }
@@ -294,11 +318,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (response.success) {
           mostrarDetallesFactura(response.data);
         } else {
-          showNotification('Error obteniendo detalles de la factura', 'error');
+          showNotification('📄 Error al obtener los detalles de la factura', 'error');
         }
       } catch (error) {
         console.error('Error obteniendo factura:', error);
-        showNotification('Error obteniendo detalles de la factura', 'error');
+        showNotification('🔧 Error de conexión al obtener la factura', 'error');
       } finally {
         showLoading(false);
       }
@@ -409,11 +433,16 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!factura) return;
    
       if (factura.estado !== 'pendiente') {
-        showNotification('Solo se pueden eliminar facturas pendientes', 'warning');
+        showNotification('⚠️ Solo se pueden eliminar facturas con estado Pendiente', 'warning');
         return;
       }
-   
-      const confirmacion = confirm(`¿Estás seguro de que quieres eliminar la factura ${factura.numero}?`);
+
+      const confirmacion = await mostrarConfirmacion(
+        `🗑️ ¿Está seguro de eliminar la factura ${factura.numero}?`,
+        'Eliminar',
+        'Esta acción no se puede deshacer.',
+        'eliminar'
+      );
       if (!confirmacion) return;
    
       try {
@@ -428,14 +457,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const response = await FacturacionService.delete(facturaId);
        
         if (response.success) {
-          showNotification('Factura eliminada exitosamente', 'success');
+          showNotification('🗑️ Factura eliminada correctamente', 'success');
           await loadFacturas(); // Recargar la lista
         } else {
-          showNotification(response.message || 'Error al eliminar la factura', 'error');
+          showNotification(`❌ ${response.message || 'Error al eliminar la factura'}`, 'error');
         }
       } catch (error) {
         console.error('Error eliminando factura:', error);
-        showNotification('Error al eliminar la factura', 'error');
+        showNotification('🔧 Error de conexión al eliminar la factura', 'error');
       } finally {
         showLoading(false);
       }
@@ -763,7 +792,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
    
     function handleExport() {
-      showNotification('Funcionalidad de exportación en desarrollo', 'info');
+      showNotification('📊 Funcionalidad de exportación próximamente disponible', 'info');
     }
    
     function handleNuevaFactura() {
@@ -816,28 +845,407 @@ document.addEventListener("DOMContentLoaded", () => {
     }
    
     function showNotification(message, type = 'info') {
-      // Crear notificación
+      // Remover notificación anterior si existe
+      const existingNotification = document.querySelector('.notification');
+      if (existingNotification) {
+        existingNotification.remove();
+      }
+      
+      // Crear notificación moderna
       const notification = document.createElement('div');
       notification.className = `notification notification-${type}`;
       notification.innerHTML = `
-        <i class="fas fa-${getNotificationIcon(type)}"></i>
-        <span>${message}</span>
-        <button class="notification-close">&times;</button>
+        <div class="notification-content">
+          <div class="notification-icon">
+            <i class="fas fa-${getNotificationIcon(type)}"></i>
+          </div>
+          <div class="notification-text">
+            <span class="notification-message">${message}</span>
+          </div>
+          <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
       `;
-   
+      
+      // Agregar estilos específicos para facturación
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        min-width: 350px;
+        max-width: 450px;
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        animation: slideInRight 0.3s ease-out;
+        overflow: hidden;
+        ${getNotificationStyles(type)}
+      `;
+      
+      // Insertar estilos si no existen
+      if (!document.querySelector('style[data-notification-styles]')) {
+        const styleSheet = document.createElement('style');
+        styleSheet.setAttribute('data-notification-styles', 'true');
+        styleSheet.textContent = `
+          @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+          }
+          
+          @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+          }
+          
+          .notification-content {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            gap: 0.75rem;
+            color: white;
+          }
+          
+          .notification-icon {
+            flex-shrink: 0;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.2);
+            font-size: 1.25rem;
+          }
+          
+          .notification-text {
+            flex: 1;
+          }
+          
+          .notification-message {
+            font-weight: 600;
+            font-size: 0.875rem;
+            line-height: 1.4;
+          }
+          
+          .notification-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0.375rem;
+            border-radius: 50%;
+            opacity: 0.8;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            flex-shrink: 0;
+          }
+          
+          .notification-close:hover {
+            opacity: 1;
+            background-color: rgba(255,255,255,0.1);
+            transform: scale(1.1);
+          }
+        `;
+        document.head.appendChild(styleSheet);
+      }
+      
       document.body.appendChild(notification);
-   
+      
       // Auto-remover después de 5 segundos
       setTimeout(() => {
         if (notification.parentNode) {
-          notification.remove();
+          notification.style.animation = 'slideOutRight 0.3s ease-out';
+          setTimeout(() => {
+            if (notification.parentNode) {
+              notification.remove();
+            }
+          }, 300);
         }
       }, 5000);
-   
-      // Cerrar manualmente
-      notification.querySelector('.notification-close').addEventListener('click', () => {
-        notification.remove();
+    }
+    
+    // Modal de confirmación personalizado
+    function mostrarConfirmacion(mensaje, accion = 'Confirmar', descripcion = '', tipo = 'info') {
+      return new Promise((resolve) => {
+        // Remover modal anterior si existe
+        const existingModal = document.querySelector('.confirmation-modal-overlay');
+        if (existingModal) {
+          existingModal.remove();
+        }
+        
+        // Determinar estilo según el tipo de acción
+        const estilos = {
+          'eliminar': {
+            color: '#ef4444',
+            gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+            icon: 'fas fa-trash-alt'
+          },
+          'pagada': {
+            color: '#10b981',
+            gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            icon: 'fas fa-check-circle'
+          },
+          'anulada': {
+            color: '#f59e0b',
+            gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+            icon: 'fas fa-times-circle'
+          },
+          'pendiente': {
+            color: '#6b7280',
+            gradient: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+            icon: 'fas fa-clock'
+          },
+          'vencida': {
+            color: '#f59e0b',
+            gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+            icon: 'fas fa-exclamation-triangle'
+          },
+          'info': {
+            color: '#3b82f6',
+            gradient: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+            icon: 'fas fa-question-circle'
+          }
+        };
+        
+        // Detectar tipo automáticamente si no se especifica
+        if (tipo === 'info') {
+          if (accion.toLowerCase().includes('eliminar')) tipo = 'eliminar';
+          else if (accion.toLowerCase().includes('pagada')) tipo = 'pagada';
+          else if (accion.toLowerCase().includes('anula')) tipo = 'anulada';
+          else if (accion.toLowerCase().includes('pendiente')) tipo = 'pendiente';
+          else if (accion.toLowerCase().includes('vencida')) tipo = 'vencida';
+        }
+        
+        const estilo = estilos[tipo] || estilos.info;
+        
+        // Crear modal de confirmación
+        const modalHtml = `
+          <div class="confirmation-modal-overlay" id="confirmation-modal">
+            <div class="confirmation-modal">
+              <div class="confirmation-header">
+                <div class="confirmation-icon" style="background: ${estilo.gradient};">
+                  <i class="${estilo.icon}"></i>
+                </div>
+                <h3 class="confirmation-title">Confirmar acción</h3>
+              </div>
+              
+              <div class="confirmation-content">
+                <p class="confirmation-message">${mensaje}</p>
+                ${descripcion ? `<p class="confirmation-description">${descripcion}</p>` : ''}
+              </div>
+              
+              <div class="confirmation-actions">
+                <button class="btn-cancel" onclick="window.resolveConfirmation(false)">
+                  <i class="fas fa-times"></i>
+                  Cancelar
+                </button>
+                <button class="btn-confirm" style="background: ${estilo.gradient};" onclick="window.resolveConfirmation(true)">
+                  <i class="fas fa-check"></i>
+                  ${accion}
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        // Insertar estilos si no existen
+        if (!document.querySelector('style[data-confirmation-styles]')) {
+          const styleSheet = document.createElement('style');
+          styleSheet.setAttribute('data-confirmation-styles', 'true');
+          styleSheet.textContent = `
+            .confirmation-modal-overlay {
+              position: fixed;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background: rgba(0, 0, 0, 0.6);
+              backdrop-filter: blur(4px);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              z-index: 10000;
+              padding: 1rem;
+              animation: fadeIn 0.2s ease-out;
+            }
+            
+            .confirmation-modal {
+              background: white;
+              border-radius: 16px;
+              box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+              width: 100%;
+              max-width: 420px;
+              overflow: hidden;
+              animation: scaleIn 0.2s ease-out;
+            }
+            
+            .confirmation-header {
+              background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+              padding: 2rem 2rem 1.5rem 2rem;
+              text-align: center;
+              border-bottom: 1px solid #e2e8f0;
+            }
+            
+            .confirmation-icon {
+              width: 4rem;
+              height: 4rem;
+              background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 auto 1rem auto;
+              color: white;
+              font-size: 1.5rem;
+            }
+            
+            .confirmation-title {
+              margin: 0;
+              font-size: 1.25rem;
+              font-weight: 700;
+              color: #1e293b;
+            }
+            
+            .confirmation-content {
+              padding: 1.5rem 2rem;
+              text-align: center;
+            }
+            
+            .confirmation-message {
+              margin: 0 0 0.75rem 0;
+              font-size: 1rem;
+              font-weight: 600;
+              color: #374151;
+              line-height: 1.5;
+            }
+            
+            .confirmation-description {
+              margin: 0;
+              font-size: 0.875rem;
+              color: #6b7280;
+              line-height: 1.4;
+            }
+            
+            .confirmation-actions {
+              padding: 1.5rem 2rem 2rem 2rem;
+              display: flex;
+              gap: 1rem;
+              justify-content: center;
+            }
+            
+            .btn-cancel,
+            .btn-confirm {
+              padding: 0.75rem 1.5rem;
+              border-radius: 8px;
+              font-weight: 600;
+              font-size: 0.875rem;
+              border: none;
+              cursor: pointer;
+              transition: all 0.2s ease;
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              min-width: 120px;
+              justify-content: center;
+            }
+            
+            .btn-cancel {
+              background: #f8fafc;
+              color: #6b7280;
+              border: 1px solid #e2e8f0;
+            }
+            
+            .btn-cancel:hover {
+              background: #f1f5f9;
+              color: #374151;
+              transform: translateY(-1px);
+            }
+            
+            .btn-confirm {
+              color: white;
+            }
+            
+            .btn-confirm:hover {
+              transform: translateY(-1px);
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            }
+            
+            @keyframes fadeIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+            
+            @keyframes scaleIn {
+              from { transform: scale(0.95) translateY(20px); opacity: 0; }
+              to { transform: scale(1) translateY(0); opacity: 1; }
+            }
+            
+            @media (max-width: 640px) {
+              .confirmation-modal {
+                margin: 1rem;
+                max-width: calc(100vw - 2rem);
+              }
+              
+              .confirmation-actions {
+                flex-direction: column;
+              }
+              
+              .btn-cancel,
+              .btn-confirm {
+                width: 100%;
+              }
+            }
+          `;
+          document.head.appendChild(styleSheet);
+        }
+        
+        // Insertar modal en el DOM
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // Función global para resolver la promesa
+        window.resolveConfirmation = (result) => {
+          const modal = document.getElementById('confirmation-modal');
+          if (modal) {
+            modal.style.animation = 'fadeIn 0.2s ease-out reverse';
+            setTimeout(() => {
+              modal.remove();
+              delete window.resolveConfirmation;
+              resolve(result);
+            }, 200);
+          }
+        };
+        
+        // Cerrar con ESC
+        const handleEsc = (e) => {
+          if (e.key === 'Escape') {
+            window.resolveConfirmation(false);
+            document.removeEventListener('keydown', handleEsc);
+          }
+        };
+        document.addEventListener('keydown', handleEsc);
+        
+        // Cerrar al hacer clic fuera del modal
+        document.getElementById('confirmation-modal').addEventListener('click', (e) => {
+          if (e.target.classList.contains('confirmation-modal-overlay')) {
+            window.resolveConfirmation(false);
+          }
+        });
       });
+    }
+    
+    function getNotificationStyles(type) {
+      const styles = {
+        'success': 'background: linear-gradient(135deg, #10b981 0%, #059669 100%);',
+        'error': 'background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);',
+        'warning': 'background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);',
+        'info': 'background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);'
+      };
+      return styles[type] || styles.info;
     }
    
     function getNotificationIcon(type) {

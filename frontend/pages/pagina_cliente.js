@@ -102,10 +102,61 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Función para eliminar cliente
   window.deleteClient = async (id) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este cliente?')) {
-      return;
-    }
+    showConfirmModal(id);
+  };
 
+  // Función para mostrar modal de confirmación
+  function showConfirmModal(clientId) {
+    const confirmModal = document.getElementById('confirmModal');
+    const confirmDeleteBtn = document.getElementById('confirmDelete');
+    const cancelDeleteBtn = document.getElementById('cancelDelete');
+    const closeModalBtn = document.getElementById('closeConfirmModal');
+
+    // Mostrar modal
+    confirmModal.classList.remove('hidden');
+
+    // Función para cerrar modal
+    const closeModal = () => {
+      confirmModal.classList.add('hidden');
+    };
+
+    // Remover event listeners anteriores
+    const newConfirmBtn = confirmDeleteBtn.cloneNode(true);
+    const newCancelBtn = cancelDeleteBtn.cloneNode(true);
+    const newCloseBtn = closeModalBtn.cloneNode(true);
+    
+    confirmDeleteBtn.parentNode.replaceChild(newConfirmBtn, confirmDeleteBtn);
+    cancelDeleteBtn.parentNode.replaceChild(newCancelBtn, cancelDeleteBtn);
+    closeModalBtn.parentNode.replaceChild(newCloseBtn, closeModalBtn);
+
+    // Agregar event listeners
+    newConfirmBtn.addEventListener('click', async () => {
+      closeModal();
+      await performDeleteClient(clientId);
+    });
+
+    newCancelBtn.addEventListener('click', closeModal);
+    newCloseBtn.addEventListener('click', closeModal);
+
+    // Cerrar modal con Escape
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+        document.removeEventListener('keydown', handleEscape);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+
+    // Cerrar modal al hacer click fuera
+    confirmModal.addEventListener('click', (e) => {
+      if (e.target === confirmModal) {
+        closeModal();
+      }
+    });
+  }
+
+  // Función para realizar la eliminación del cliente
+  async function performDeleteClient(id) {
     try {
       await ApiService.ClienteService.delete(id);
       clients = clients.filter(c => c.id !== id);

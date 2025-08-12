@@ -165,6 +165,22 @@ const AuthService = {
     return await apiRequest('/auth/profile');
   },
 
+  // Recuperar contraseña
+  async forgotPassword(email) {
+    return await apiRequest('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    });
+  },
+
+  // Restablecer contraseña
+  async resetPassword(token, newPassword) {
+    return await apiRequest('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, newPassword })
+    });
+  },
+
   // Guardar token en localStorage
   setToken(token) {
     localStorage.setItem('token', token);

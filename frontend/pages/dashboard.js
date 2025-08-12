@@ -1,5 +1,40 @@
 // Dashboard Nuevo - JavaScript
-console.log(' Iniciando Dashboard Nuevo...');
+console.log('🚀 Iniciando Dashboard Nuevo...');
+
+// Verificar autenticación antes de cargar el dashboard
+function checkAuthentication() {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+        console.log('❌ No hay token de autenticación. Redirigiendo al login...');
+        window.location.href = 'login.html';
+        return false;
+    }
+    
+    // Verificar si el token ha expirado
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const currentTime = Date.now() / 1000;
+        
+        if (payload.exp < currentTime) {
+            console.log('⏰ Token expirado. Redirigiendo al login...');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+            return false;
+        }
+        
+        console.log('✅ Usuario autenticado:', payload.email);
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Token malformado:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = 'login.html';
+        return false;
+    }
+}
 
 // Variables globales
 let categoriesChart = null;
@@ -14,7 +49,14 @@ let dashboardData = {
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
-    console.log(' DOM cargado - inicializando dashboard...');
+    console.log('📋 DOM cargado - verificando autenticación...');
+    
+    // Verificar autenticación antes de inicializar el dashboard
+    if (!checkAuthentication()) {
+        return; // Si no está autenticado, se redirige y no continúa
+    }
+    
+    console.log('🎯 Usuario autenticado - inicializando dashboard...');
     initDashboard();
 });
 
@@ -104,7 +146,16 @@ async function loadAllData() {
         
     } catch (error) {
         console.error('❌ Error cargando datos:', error);
-        // Usar datos de prueba como fallback
+        
+        // Verificar si el error es de autenticación
+        if (!localStorage.getItem('token')) {
+            console.log('🔒 Error de autenticación - redirigiendo al login');
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        // Solo usar datos de fallback si es un error de conectividad
+        console.log('⚠️ Usando datos de fallback por error de conectividad');
         loadFallbackData();
     }
 }
@@ -115,14 +166,14 @@ async function loadProductos() {
     try {
         // Verificar ApiService como lo hace Producto.js
         if (!window.ApiService) {
-            console.warn('ApiService no disponible, usando datos de prueba');
-            dashboardData.productos = createTestProducts();
+            console.warn('⚠️ ApiService no disponible');
+            dashboardData.productos = [];
             return;
         }
         
         if (!window.ApiService.ProductoService) {
-            console.warn('ProductoService no disponible, usando datos de prueba');
-            dashboardData.productos = createTestProducts();
+            console.warn('⚠️ ProductoService no disponible');
+            dashboardData.productos = [];
             return;
         }
         
@@ -133,13 +184,13 @@ async function loadProductos() {
             dashboardData.productos = response.data || [];
             console.log('✅ Productos cargados desde API:', dashboardData.productos.length);
         } else {
-            console.warn('Error en respuesta de productos, usando datos de prueba');
-            dashboardData.productos = createTestProducts();
+            console.warn('⚠️ Error en respuesta de productos');
+            dashboardData.productos = [];
         }
         
     } catch (error) {
         console.error('❌ Error cargando productos:', error);
-        dashboardData.productos = createTestProducts();
+        dashboardData.productos = [];
     }
 }
 
@@ -192,6 +243,8 @@ async function loadFacturas() {
     }
 }
 
+// Función deshabilitada - ya no usamos datos de prueba
+/*
 function createTestProducts() {
     // Mismos productos de prueba que usa Producto.js
     return [
@@ -215,10 +268,11 @@ function createTestProducts() {
         }
     ];
 }
+*/
 
 function loadFallbackData() {
-    console.log(' Cargando datos de fallback...');
-    dashboardData.productos = createTestProducts();
+    console.log('⚠️ Cargando datos vacíos por error de conectividad...');
+    dashboardData.productos = [];
     dashboardData.clientes = [];
     dashboardData.facturas = [];
 }

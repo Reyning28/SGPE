@@ -135,7 +135,17 @@ document.addEventListener("DOMContentLoaded", () => {
             // Verificar si ApiService está disponible
             if (!window.ApiService) {
                 console.error('ApiService no está disponible');
-                // Crear productos de prueba si no hay API
+                // Intentar cargar desde localStorage primero
+                const backupData = tryLoadFromLocalStorage();
+                if (backupData && backupData.length > 0) {
+                    productos = backupData;
+                    todosLosProductos = [...productos];
+                    renderProductos();
+                    updateEstadisticas();
+                    showNotification('Datos cargados desde el respaldo local', 'info');
+                    return;
+                }
+                // Crear productos de prueba si no hay respaldo
                 productos = createTestProducts();
                 todosLosProductos = [...productos];
                 renderProductos();
@@ -145,6 +155,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (!window.ApiService.ProductoService) {
                 console.error('ProductoService no está disponible');
+                // Intentar cargar desde localStorage primero
+                const backupData = tryLoadFromLocalStorage();
+                if (backupData && backupData.length > 0) {
+                    productos = backupData;
+                    todosLosProductos = [...productos];
+                    renderProductos();
+                    updateEstadisticas();
+                    showNotification('Datos cargados desde el respaldo local', 'info');
+                    return;
+                }
                 productos = createTestProducts();
                 todosLosProductos = [...productos];
                 renderProductos();
@@ -164,7 +184,17 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 console.error('Error al cargar productos:', response?.message);
                 showNotification('Error al cargar los productos: ' + (response?.message || 'Error desconocido'), 'error');
-                // Usar productos de prueba como fallback
+                // Intentar cargar desde localStorage antes del fallback
+                const backupData = tryLoadFromLocalStorage();
+                if (backupData && backupData.length > 0) {
+                    productos = backupData;
+                    todosLosProductos = [...productos];
+                    renderProductos();
+                    updateEstadisticas();
+                    showNotification('Datos cargados desde el respaldo local', 'info');
+                    return;
+                }
+                // Usar productos de prueba como fallback final
                 productos = createTestProducts();
                 todosLosProductos = [...productos];
                 renderProductos();
@@ -173,7 +203,17 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
             console.error('Error cargando productos:', error);
             showNotification('Error al cargar los productos: ' + (error.message || 'Error desconocido'), 'error');
-            // Usar productos de prueba como fallback
+            // Intentar cargar desde localStorage antes del fallback
+            const backupData = tryLoadFromLocalStorage();
+            if (backupData && backupData.length > 0) {
+                productos = backupData;
+                todosLosProductos = [...productos];
+                renderProductos();
+                updateEstadisticas();
+                showNotification('Datos cargados desde el respaldo local', 'info');
+                return;
+            }
+            // Usar productos de prueba como fallback final
             productos = createTestProducts();
             todosLosProductos = [...productos];
             renderProductos();
@@ -365,6 +405,21 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
+    // Función para cargar datos desde localStorage
+    function tryLoadFromLocalStorage() {
+        try {
+            const backupData = localStorage.getItem('productos_backup');
+            if (backupData) {
+                const parsedData = JSON.parse(backupData);
+                console.log('✅ Datos encontrados en localStorage:', parsedData.length, 'productos');
+                return parsedData;
+            }
+        } catch (error) {
+            console.warn('⚠️ Error al cargar desde localStorage:', error);
+        }
+        return null;
+    }
+
     // Funciones de búsqueda y filtros
     function handleSearch(event) {
         currentSearchTerm = event.target.value.trim();
@@ -447,7 +502,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function verProducto(id) {
         const producto = productos.find(p => p.id == id);
         if (producto) {
-            alert(`Producto: ${producto.nombre}\nCódigo: ${producto.codigo}\nPrecio: ${formatCurrency(producto.precio)}\nStock: ${producto.stock}`);
+            mostrarModalVerProducto(producto);
         }
     }
 
@@ -488,7 +543,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function ajustarStock(id, action) {
-        const cantidad = prompt(action === 'add' ? 'Cantidad a agregar:' : 'Cantidad a reducir:', '1');
+        const cantidad = await mostrarModalAjustarStock(action);
         if (!cantidad || isNaN(cantidad) || parseInt(cantidad) <= 0) return;
 
         const producto = productos.find(p => p.id == id);
@@ -828,17 +883,640 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function mostrarModalEditarProducto(producto) {
         console.log('Mostrar modal editar producto:', producto);
-        // Por ahora usar prompt simple
-        const nuevoNombre = prompt('Nuevo nombre:', producto.nombre);
-        const nuevoPrecio = prompt('Nuevo precio:', producto.precio);
         
-        if (nuevoNombre && nuevoPrecio && !isNaN(nuevoPrecio)) {
-            producto.nombre = nuevoNombre;
-            producto.precio = parseFloat(nuevoPrecio);
-            renderProductos();
-            updateEstadisticas();
-            showNotification('Producto actualizado correctamente', 'success');
+        // Crear modal de edición
+        const modalHtml = `
+            <div class="modal" id="editar-producto-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">
+                            <i class="fas fa-edit"></i>
+                            Editar Producto
+                        </h2>
+                        <button class="modal-close" onclick="cerrarModal('editar-producto-modal')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form" id="form-editar-producto">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="edit-nombre">Nombre del Producto</label>
+                                    <input type="text" id="edit-nombre" value="${producto.nombre}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="edit-codigo">Código</label>
+                                    <input type="text" id="edit-codigo" value="${producto.codigo || ''}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="edit-categoria">Categoría</label>
+                                    <select id="edit-categoria" required>
+                                        <option value="">Seleccionar categoría</option>
+                                        <option value="Electrónicos" ${producto.categoria === 'Electrónicos' ? 'selected' : ''}>Electrónicos</option>
+                                        <option value="Ropa" ${producto.categoria === 'Ropa' ? 'selected' : ''}>Ropa</option>
+                                        <option value="Hogar" ${producto.categoria === 'Hogar' ? 'selected' : ''}>Hogar</option>
+                                        <option value="Deportes" ${producto.categoria === 'Deportes' ? 'selected' : ''}>Deportes</option>
+                                        <option value="Libros" ${producto.categoria === 'Libros' ? 'selected' : ''}>Libros</option>
+                                        <option value="Salud" ${producto.categoria === 'Salud' ? 'selected' : ''}>Salud</option>
+                                        <option value="Belleza" ${producto.categoria === 'Belleza' ? 'selected' : ''}>Belleza</option>
+                                        <option value="Otros" ${producto.categoria === 'Otros' ? 'selected' : ''}>Otros</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="edit-precio">Precio (DOP)</label>
+                                    <input type="number" id="edit-precio" step="0.01" min="0" value="${producto.precio}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="edit-stock">Stock</label>
+                                    <input type="number" id="edit-stock" min="0" value="${producto.stock || 0}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="edit-stock-minimo">Stock Mínimo</label>
+                                    <input type="number" id="edit-stock-minimo" min="0" value="${producto.stockMinimo || 5}">
+                                </div>
+                                <div class="form-group">
+                                    <label for="edit-proveedor">Proveedor</label>
+                                    <input type="text" id="edit-proveedor" value="${producto.proveedor || ''}">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="edit-descripcion">Descripción</label>
+                                    <textarea id="edit-descripcion" rows="3" placeholder="Descripción del producto">${producto.descripcion || ''}</textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="modal-actions">
+                                <button type="button" class="btn-secondary" onclick="cerrarModal('editar-producto-modal')">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </button>
+                                <button type="submit" class="btn-primary">
+                                    <i class="fas fa-save"></i> Guardar Cambios
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Insertar modal en el DOM
+        const existingModal = document.getElementById('editar-producto-modal');
+        if (existingModal) {
+            existingModal.remove();
         }
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // Mostrar modal
+        const modal = document.getElementById('editar-producto-modal');
+        modal.classList.add('show');
+        modal.style.display = 'flex';
+        
+        // Configurar eventos del formulario
+        const form = document.getElementById('form-editar-producto');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                const datosActualizados = {
+                    id: producto.id,
+                    nombre: document.getElementById('edit-nombre').value.trim(),
+                    codigo: document.getElementById('edit-codigo').value.trim(),
+                    categoria: document.getElementById('edit-categoria').value,
+                    precio: parseFloat(document.getElementById('edit-precio').value),
+                    stock: parseInt(document.getElementById('edit-stock').value),
+                    stockMinimo: parseInt(document.getElementById('edit-stock-minimo').value) || 5,
+                    proveedor: document.getElementById('edit-proveedor').value.trim(),
+                    descripcion: document.getElementById('edit-descripcion').value.trim()
+                };
+                
+                // Validar datos
+                if (!datosActualizados.nombre || !datosActualizados.codigo || !datosActualizados.categoria) {
+                    showNotification('Por favor, complete todos los campos obligatorios', 'error');
+                    return;
+                }
+                
+                if (datosActualizados.precio <= 0) {
+                    showNotification('El precio debe ser mayor a 0', 'error');
+                    return;
+                }
+                
+                // Actualizar producto
+                if (window.ApiService && window.ApiService.ProductoService) {
+                    const ProductoService = window.ApiService.ProductoService;
+                    const response = await ProductoService.update(producto.id, datosActualizados);
+
+                    if (response && response.success) {
+                        // Actualizar arrays locales con los datos del servidor
+                        const index = productos.findIndex(p => p.id === producto.id);
+                        if (index !== -1) {
+                            productos[index] = { ...productos[index], ...datosActualizados };
+                            todosLosProductos = todosLosProductos.map(p => 
+                                p.id === producto.id ? { ...p, ...datosActualizados } : p
+                            );
+                        }
+                        
+                        renderProductos();
+                        updateEstadisticas();
+                        cerrarModal('editar-producto-modal');
+                        showNotification('Producto actualizado correctamente', 'success');
+                    } else {
+                        showNotification('Error al actualizar el producto: ' + (response?.message || 'Error desconocido'), 'error');
+                    }
+                } else {
+                    // Fallback: actualizar solo localmente y guardar en localStorage
+                    console.warn('API no disponible, actualizando solo localmente');
+                    const index = productos.findIndex(p => p.id === producto.id);
+                    if (index !== -1) {
+                        productos[index] = { ...productos[index], ...datosActualizados };
+                        todosLosProductos = todosLosProductos.map(p => 
+                            p.id === producto.id ? { ...p, ...datosActualizados } : p
+                        );
+                        
+                        // Guardar en localStorage como respaldo
+                        try {
+                            localStorage.setItem('productos_backup', JSON.stringify(todosLosProductos));
+                            console.log('✅ Datos guardados en localStorage como respaldo');
+                        } catch (e) {
+                            console.warn('⚠️ No se pudo guardar en localStorage:', e);
+                        }
+                        
+                        renderProductos();
+                        updateEstadisticas();
+                        cerrarModal('editar-producto-modal');
+                        showNotification('Producto actualizado localmente. Para persistir los cambios, asegúrate de que el servidor esté funcionando.', 'warning');
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error al actualizar producto:', error);
+                showNotification('Error al actualizar el producto: ' + error.message, 'error');
+            }
+        });
+    }
+
+    function mostrarModalVerProducto(producto) {
+        console.log('Mostrar modal ver producto:', producto);
+        
+        // Crear modal de visualización
+        const modalHtml = `
+            <div class="modal" id="ver-producto-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">
+                            <i class="fas fa-eye"></i>
+                            Detalles del Producto
+                        </h2>
+                        <button class="modal-close" onclick="cerrarModal('ver-producto-modal')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="producto-detalle">
+                            <div class="producto-header">
+                                <div class="producto-info-principal">
+                                    <h3 class="producto-nombre">${producto.nombre}</h3>
+                                    <span class="producto-codigo">Código: ${producto.codigo || 'N/A'}</span>
+                                </div>
+                                <div class="producto-precio">
+                                    <span class="precio-valor">${formatCurrency(producto.precio)}</span>
+                                    <span class="precio-label">Precio unitario</span>
+                                </div>
+                            </div>
+                            
+                            <div class="producto-stats">
+                                <div class="stat-item ${(producto.stock || 0) <= (producto.stockMinimo || 5) ? 'stock-bajo' : ''}">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-boxes"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <span class="stat-valor">${producto.stock || 0}</span>
+                                        <span class="stat-label">Stock disponible</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <span class="stat-valor">${producto.stockMinimo || 5}</span>
+                                        <span class="stat-label">Stock mínimo</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-dollar-sign"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <span class="stat-valor">${formatCurrency((producto.precio || 0) * (producto.stock || 0))}</span>
+                                        <span class="stat-label">Valor total</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="producto-detalles">
+                                <div class="detalle-row">
+                                    <div class="detalle-item">
+                                        <label>Categoría</label>
+                                        <span class="categoria-badge ${(producto.categoria || '').toLowerCase()}">${producto.categoria || 'Sin categoría'}</span>
+                                    </div>
+                                    <div class="detalle-item">
+                                        <label>Proveedor</label>
+                                        <span>${producto.proveedor || 'No especificado'}</span>
+                                    </div>
+                                </div>
+                                
+                                ${producto.descripcion ? `
+                                <div class="detalle-row">
+                                    <div class="detalle-item full-width">
+                                        <label>Descripción</label>
+                                        <p class="descripcion">${producto.descripcion}</p>
+                                    </div>
+                                </div>
+                                ` : ''}
+                                
+                                <div class="detalle-row">
+                                    <div class="detalle-item">
+                                        <label>Estado</label>
+                                        <span class="estado-badge ${getEstadoClase(producto)}">${getEstadoTexto(producto)}</span>
+                                    </div>
+                                    <div class="detalle-item">
+                                        <label>Fecha de registro</label>
+                                        <span>${producto.fechaCreacion ? new Date(producto.fechaCreacion).toLocaleDateString('es-ES') : 'No disponible'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="modal-actions">
+                                <button type="button" class="btn-primary" onclick="cerrarModal('ver-producto-modal')">
+                                    <i class="fas fa-times"></i> Cerrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Insertar modal en el DOM
+        const existingModal = document.getElementById('ver-producto-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // Mostrar modal
+        const modal = document.getElementById('ver-producto-modal');
+        modal.classList.add('show');
+        modal.style.display = 'flex';
+    }
+
+    // Funciones auxiliares para el modal de ver producto
+    function getEstadoClase(producto) {
+        const stock = producto.stock || 0;
+        const stockMinimo = producto.stockMinimo || 5;
+        
+        if (stock <= 0) return 'agotado';
+        if (stock <= stockMinimo) return 'stock-bajo';
+        return 'disponible';
+    }
+
+    function getEstadoTexto(producto) {
+        const stock = producto.stock || 0;
+        const stockMinimo = producto.stockMinimo || 5;
+        
+        if (stock <= 0) return 'Agotado';
+        if (stock <= stockMinimo) return 'Stock bajo';
+        return 'Disponible';
+    }
+
+    // Modal para ajustar stock
+    function mostrarModalAjustarStock(action) {
+        return new Promise((resolve) => {
+            // Remover modal anterior si existe
+            const existingModal = document.querySelector('.stock-modal-overlay');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            const isAdd = action === 'add';
+            const titulo = isAdd ? 'Agregar Stock' : 'Reducir Stock';
+            const icono = isAdd ? 'fas fa-plus-circle' : 'fas fa-minus-circle';
+            const color = isAdd ? '#10b981' : '#f59e0b';
+            const gradient = isAdd ? 
+                'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 
+                'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+            
+            // Crear modal
+            const modalHtml = `
+                <div class="stock-modal-overlay" id="stock-modal">
+                    <div class="stock-modal">
+                        <div class="stock-header">
+                            <div class="stock-icon" style="background: ${gradient};">
+                                <i class="${icono}"></i>
+                            </div>
+                            <h3 class="stock-title">${titulo}</h3>
+                            <p class="stock-subtitle">Ingresa la cantidad que deseas ${isAdd ? 'agregar al' : 'reducir del'} inventario</p>
+                        </div>
+                        
+                        <div class="stock-content">
+                            <form id="stock-form" class="stock-form">
+                                <div class="form-group">
+                                    <label for="stock-cantidad" class="form-label">Cantidad</label>
+                                    <div class="input-wrapper">
+                                        <div class="input-icon" style="color: ${color};">
+                                            <i class="${isAdd ? 'fas fa-plus' : 'fas fa-minus'}"></i>
+                                        </div>
+                                        <input 
+                                            type="number" 
+                                            id="stock-cantidad" 
+                                            name="cantidad" 
+                                            placeholder="Ej: 10" 
+                                            class="form-input"
+                                            min="1"
+                                            step="1"
+                                            required
+                                            autofocus
+                                        >
+                                        <div class="input-suffix">unidades</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="stock-actions">
+                                    <button type="button" class="btn-cancel" onclick="window.resolveStock(null)">
+                                        <i class="fas fa-times"></i>
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" class="btn-confirm" style="background: ${gradient};">
+                                        <i class="${icono}"></i>
+                                        ${titulo}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Insertar estilos si no existen
+            if (!document.querySelector('style[data-stock-styles]')) {
+                const styleSheet = document.createElement('style');
+                styleSheet.setAttribute('data-stock-styles', 'true');
+                styleSheet.textContent = `
+                    .stock-modal-overlay {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: rgba(0, 0, 0, 0.6);
+                        backdrop-filter: blur(4px);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 10000;
+                        padding: 1rem;
+                        animation: fadeIn 0.2s ease-out;
+                    }
+                    
+                    .stock-modal {
+                        background: white;
+                        border-radius: 16px;
+                        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+                        width: 100%;
+                        max-width: 450px;
+                        overflow: hidden;
+                        animation: scaleIn 0.2s ease-out;
+                    }
+                    
+                    .stock-header {
+                        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+                        padding: 2rem 2rem 1.5rem 2rem;
+                        text-align: center;
+                        border-bottom: 1px solid #e2e8f0;
+                    }
+                    
+                    .stock-icon {
+                        width: 4rem;
+                        height: 4rem;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin: 0 auto 1rem auto;
+                        color: white;
+                        font-size: 1.5rem;
+                    }
+                    
+                    .stock-title {
+                        margin: 0 0 0.5rem 0;
+                        font-size: 1.375rem;
+                        font-weight: 700;
+                        color: #1e293b;
+                    }
+                    
+                    .stock-subtitle {
+                        margin: 0;
+                        font-size: 0.875rem;
+                        color: #64748b;
+                        line-height: 1.4;
+                    }
+                    
+                    .stock-content {
+                        padding: 2rem;
+                    }
+                    
+                    .stock-form .form-group {
+                        margin-bottom: 2rem;
+                    }
+                    
+                    .stock-form .form-label {
+                        display: block;
+                        margin-bottom: 0.5rem;
+                        font-weight: 600;
+                        color: #374151;
+                        font-size: 0.875rem;
+                    }
+                    
+                    .stock-form .input-wrapper {
+                        position: relative;
+                        display: block;
+                    }
+                    
+                    .stock-form .input-icon {
+                        position: absolute;
+                        left: 1rem;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        z-index: 2;
+                        font-size: 1rem;
+                        pointer-events: none;
+                    }
+                    
+                    .stock-form .form-input {
+                        width: 100%;
+                        padding: 1rem 5rem 1rem 3rem;
+                        border: 2px solid #e2e8f0;
+                        border-radius: 8px;
+                        font-size: 1rem;
+                        transition: all 0.2s ease;
+                        background-color: white;
+                        color: #1e293b;
+                        text-align: center;
+                        font-weight: 600;
+                        box-sizing: border-box;
+                    }
+                    
+                    .stock-form .form-input:focus {
+                        outline: none;
+                        border-color: #3b82f6;
+                        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+                    }
+                    
+                    .stock-form .input-suffix {
+                        position: absolute;
+                        right: 1rem;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        color: #6b7280;
+                        font-size: 0.875rem;
+                        font-weight: 500;
+                        pointer-events: none;
+                        z-index: 2;
+                    }
+                    
+                    .stock-actions {
+                        display: flex;
+                        gap: 1rem;
+                        justify-content: center;
+                    }
+                    
+                    .btn-cancel,
+                    .btn-confirm {
+                        padding: 0.75rem 1.5rem;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        font-size: 0.875rem;
+                        border: none;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                        min-width: 130px;
+                        justify-content: center;
+                    }
+                    
+                    .btn-cancel {
+                        background: #f8fafc;
+                        color: #6b7280;
+                        border: 1px solid #e2e8f0;
+                    }
+                    
+                    .btn-cancel:hover {
+                        background: #f1f5f9;
+                        color: #374151;
+                        transform: translateY(-1px);
+                    }
+                    
+                    .btn-confirm {
+                        color: white;
+                    }
+                    
+                    .btn-confirm:hover {
+                        transform: translateY(-1px);
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                    }
+                    
+                    @keyframes fadeIn {
+                        from { opacity: 0; }
+                        to { opacity: 1; }
+                    }
+                    
+                    @keyframes scaleIn {
+                        from { transform: scale(0.95) translateY(20px); opacity: 0; }
+                        to { transform: scale(1) translateY(0); opacity: 1; }
+                    }
+                    
+                    @media (max-width: 640px) {
+                        .stock-modal {
+                            margin: 1rem;
+                            max-width: calc(100vw - 2rem);
+                        }
+                        
+                        .stock-actions {
+                            flex-direction: column;
+                        }
+                        
+                        .btn-cancel,
+                        .btn-confirm {
+                            width: 100%;
+                        }
+                    }
+                `;
+                document.head.appendChild(styleSheet);
+            }
+            
+            // Insertar modal en el DOM
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Función global para resolver la promesa
+            window.resolveStock = (value) => {
+                const modal = document.getElementById('stock-modal');
+                if (modal) {
+                    modal.style.animation = 'fadeIn 0.2s ease-out reverse';
+                    setTimeout(() => {
+                        modal.remove();
+                        delete window.resolveStock;
+                        resolve(value);
+                    }, 200);
+                }
+            };
+            
+            // Configurar eventos del formulario
+            document.getElementById('stock-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const cantidad = document.getElementById('stock-cantidad').value;
+                if (cantidad && !isNaN(cantidad) && parseInt(cantidad) > 0) {
+                    window.resolveStock(cantidad);
+                }
+            });
+            
+            // Cerrar con ESC
+            const handleEsc = (e) => {
+                if (e.key === 'Escape') {
+                    window.resolveStock(null);
+                    document.removeEventListener('keydown', handleEsc);
+                }
+            };
+            document.addEventListener('keydown', handleEsc);
+            
+            // Cerrar al hacer clic fuera del modal
+            document.getElementById('stock-modal').addEventListener('click', (e) => {
+                if (e.target.classList.contains('stock-modal-overlay')) {
+                    window.resolveStock(null);
+                }
+            });
+            
+            // Enfocar el input después de un breve delay
+            setTimeout(() => {
+                document.getElementById('stock-cantidad').focus();
+            }, 100);
+        });
     }
 
     function mostrarReporteInventario() {

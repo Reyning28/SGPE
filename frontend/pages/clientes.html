@@ -75,6 +75,34 @@
     </div>
   </div>
 
+  <!-- Modal de confirmación para eliminar cliente -->
+  <div id="confirmModal" class="modal hidden">
+    <div class="modal-content confirmation-modal">
+      <button class="modal-close" id="closeConfirmModal">
+        <i class="fas fa-times"></i>
+      </button>
+      
+      <div class="confirmation-header">
+        <i class="fas fa-exclamation-triangle warning-icon"></i>
+        <h3>Confirmar eliminación</h3>
+      </div>
+      
+      <div class="confirmation-body">
+        <p>¿Estás seguro de que quieres eliminar este cliente?</p>
+        <p class="warning-text">Esta acción no se puede deshacer.</p>
+      </div>
+      
+      <div class="confirmation-actions">
+        <button id="confirmDelete" class="btn-danger">
+          <i class="fas fa-trash"></i> Eliminar
+        </button>
+        <button id="cancelDelete" class="btn-secondary">
+          <i class="fas fa-times"></i> Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="../js/api.js"></script>
   <script src="../js/auth.js"></script>
   <script src="pagina_cliente.js"></script>

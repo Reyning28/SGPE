@@ -17,7 +17,7 @@ function checkAuthentication() {
         const currentTime = Date.now() / 1000;
         
         if (payload.exp < currentTime) {
-            console.log('⏰ Token expirado. Redirigiendo al login...');
+            console.log(' Token expirado. Redirigiendo al login...');
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = 'login.html';
@@ -49,14 +49,14 @@ let dashboardData = {
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📋 DOM cargado - verificando autenticación...');
+    console.log(' DOM cargado - verificando autenticación...');
     
     // Verificar autenticación antes de inicializar el dashboard
     if (!checkAuthentication()) {
         return; // Si no está autenticado, se redirige y no continúa
     }
     
-    console.log('🎯 Usuario autenticado - inicializando dashboard...');
+    console.log(' Usuario autenticado - inicializando dashboard...');
     initDashboard();
 });
 
@@ -149,13 +149,13 @@ async function loadAllData() {
         
         // Verificar si el error es de autenticación
         if (!localStorage.getItem('token')) {
-            console.log('🔒 Error de autenticación - redirigiendo al login');
+            console.log(' Error de autenticación - redirigiendo al login');
             window.location.href = 'login.html';
             return;
         }
         
         // Solo usar datos de fallback si es un error de conectividad
-        console.log('⚠️ Usando datos de fallback por error de conectividad');
+        console.log(' Usando datos de fallback por error de conectividad');
         loadFallbackData();
     }
 }
@@ -166,13 +166,13 @@ async function loadProductos() {
     try {
         // Verificar ApiService como lo hace Producto.js
         if (!window.ApiService) {
-            console.warn('⚠️ ApiService no disponible');
+            console.warn(' ApiService no disponible');
             dashboardData.productos = [];
             return;
         }
         
         if (!window.ApiService.ProductoService) {
-            console.warn('⚠️ ProductoService no disponible');
+            console.warn(' ProductoService no disponible');
             dashboardData.productos = [];
             return;
         }
@@ -184,7 +184,7 @@ async function loadProductos() {
             dashboardData.productos = response.data || [];
             console.log('✅ Productos cargados desde API:', dashboardData.productos.length);
         } else {
-            console.warn('⚠️ Error en respuesta de productos');
+            console.warn(' Error en respuesta de productos');
             dashboardData.productos = [];
         }
         
@@ -243,35 +243,10 @@ async function loadFacturas() {
     }
 }
 
-// Función deshabilitada - ya no usamos datos de prueba
-/*
-function createTestProducts() {
-    // Mismos productos de prueba que usa Producto.js
-    return [
-        {
-            id: 1,
-            codigo: 'PROD001',
-            nombre: 'Producto Ejemplo 1',
-            categoria: 'Electrónicos',
-            precio: 100.00,
-            stock: 50,
-            stockMinimo: 10
-        },
-        {
-            id: 2,
-            codigo: 'PROD002',
-            nombre: 'Producto Ejemplo 2',
-            categoria: 'Ropa',
-            precio: 25.00,
-            stock: 5,
-            stockMinimo: 10
-        }
-    ];
-}
-*/
+
 
 function loadFallbackData() {
-    console.log('⚠️ Cargando datos vacíos por error de conectividad...');
+    console.log(' Cargando datos vacíos por error de conectividad...');
     dashboardData.productos = [];
     dashboardData.clientes = [];
     dashboardData.facturas = [];

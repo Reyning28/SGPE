@@ -84,39 +84,7 @@ function showConnectionStatus(isConnected) {
   // Función deshabilitada - no mostrar indicador de conexión
   return;
   
-  /* CÓDIGO ORIGINAL COMENTADO:
-  // Crear o actualizar el indicador de estado
-  let statusIndicator = document.getElementById('connection-status');
   
-  if (!statusIndicator) {
-    statusIndicator = document.createElement('div');
-    statusIndicator.id = 'connection-status';
-    statusIndicator.style.cssText = `
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      padding: 8px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: bold;
-      z-index: 9999;
-      transition: all 0.3s ease;
-    `;
-    document.body.appendChild(statusIndicator);
-  }
-  
-  if (isConnected) {
-    statusIndicator.textContent = '🟢 Conectado';
-    statusIndicator.style.backgroundColor = '#d4edda';
-    statusIndicator.style.color = '#155724';
-    statusIndicator.style.border = '1px solid #c3e6cb';
-  } else {
-    statusIndicator.textContent = '🔴 Desconectado';
-    statusIndicator.style.backgroundColor = '#f8d7da';
-    statusIndicator.style.color = '#721c24';
-    statusIndicator.style.border = '1px solid #f5c6cb';
-  }
-  */
 }
 
 // Verificar conexión automáticamente al cargar - DESHABILITADO

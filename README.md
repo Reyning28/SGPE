@@ -1,126 +1,366 @@
 # 🏢 SGPE - Sistema de Gestión para Pequeñas Empresas
 
-Un sistema completo de gestión empresarial desarrollado con **Node.js**, **Express**, **SQLite** y **HTML/CSS/JavaScript** para pequeñas empresas que necesitan gestionar su inventario, clientes y facturación.
-
-**🚀 Nuevo: Incluye un Chatbot IA integrado para asistencia al usuario.**
+Un sistema completo de gestión empresarial desarrollado con **Node.js**, **Express**, **SQLite** y **HTML/CSS/JavaScript** vanilla para pequeñas empresas que necesitan gestionar su inventario, clientes y facturación de manera eficiente.
 
 ## ✨ Características Principales
 
-### 🤖 **Chatbot Inteligente (Nuevo)**
-- **Asistente virtual 24/7** para ayuda con el sistema
-- **Respuestas contextuales** sobre clientes, productos y facturación
-- **Interfaz moderna y responsive** integrada en todas las páginas
-- **Modo básico** (sin API key) y **modo IA avanzado** (con OpenAI)
-- **Botones de acción rápida** para consultas frecuentes
-
 ### 📋 **Gestión de Clientes**
-- Registro completo de clientes con validación
-- Búsqueda y filtros avanzados
-- Historial de transacciones por cliente
+- Registro completo de clientes con validación en tiempo real
+- Búsqueda inteligente por nombre
+- Modal personalizado para confirmación de eliminación
+- Interfaz moderna y responsive
 
 ### 📦 **Control de Inventario**
-- Gestión completa de productos
+- Gestión completa de productos con códigos únicos
 - Control de stock en tiempo real
-- Alertas de bajo inventario
-- Categorización y códigos SKU
+- Alertas visuales de stock bajo/mínimo
+- Categorización por tipos (Electrónicos, Ropa, etc.)
 
 ### 💰 **Sistema de Facturación**
-- Generación automática de facturas
-- Cálculo de totales e impuestos
-- Historial completo de ventas
-- Reportes de facturación
+- Generación de facturas con múltiples productos
+- Cálculo automático de subtotales, ITBIS y totales
+- Búsqueda de clientes y productos en tiempo real
+- Interfaz intuitiva para creación de facturas
 
 ### 📊 **Dashboard Empresarial**
-- Métricas en tiempo real
-- Gráficos de ventas y tendencias
+- Métricas en tiempo real (productos, clientes, facturas, ventas)
+- Gráficos interactivos con Chart.js
+  - Distribución por categorías (gráfico de dona)
+  - Análisis de stock (gráfico de barras)
 - Resumen ejecutivo del negocio
-- Accesos rápidos a funciones principales
+- Accesos rápidos a todas las funciones
 
+### 🔐 **Sistema de Autenticación**
+- Login seguro con JWT tokens
+- Validación de sesión en todas las páginas
+- Logout automático por expiración de token
+- Registro de nuevos usuarios
+
+## 🛠️ Tecnologías Utilizadas
+
+### Backend
+- **Node.js** - Entorno de ejecución
+- **Express.js** - Framework web
+- **SQLite** - Base de datos ligera
+- **Sequelize** - ORM para base de datos
+- **JWT (jsonwebtoken)** - Autenticación
+- **bcryptjs** - Encriptación de contraseñas
+- **cors** - Manejo de CORS
+- **dotenv** - Variables de entorno
+
+### Frontend
+- **HTML5** - Estructura
+- **CSS3** - Estilos (Grid, Flexbox, Variables CSS)
+- **JavaScript Vanilla** - Lógica del cliente
+- **Chart.js** - Gráficos interactivos
+- **Font Awesome** - Iconografía
+- **Google Fonts (Inter)** - Tipografía moderna
+
+### Herramientas de Desarrollo
+- **npm** - Gestor de paquetes
+- **Visual Studio Code** - Editor recomendado
+- **Git** - Control de versiones
 
 ## 🚀 Inicio Rápido
 
 ### Prerrequisitos
-- Node.js 16+ y npm
-- Editor de código (VS Code recomendado)
-- Navegador web moderno
-- (Opcional) API key de OpenAI para chatbot IA
+- **Node.js 16+** y **npm**
+- **Navegador web moderno** (Chrome, Firefox, Edge)
+- **Editor de código** (VS Code recomendado)
 
-### Instalación
+### Instalación Automática
 
-1. **Clonar el repositorio**
+**Opción 1: Script de inicio (Recomendado)**
 ```bash
-git clone <url-del-repositorio>
-cd SGPE
+# Doble clic en start-project.bat o ejecutar:
+start-project.bat
 ```
 
-2. **Configurar el Backend**
+**Opción 2: Instalación manual**
+
+1. **Configurar el Backend**
 ```bash
 cd backend
 npm install
-npm run init-db
 npm start
 ```
 
-3. **Configurar el Frontend**
+2. **Configurar el Frontend**
 ```bash
 cd frontend
 npm install
-REM Abrir pages/dashboard.html en tu navegador
-REM O usar un servidor web local
-REM Ejemplo: abrir frontend/pages/dashboard.html con doble clic o desde el navegador
+npm start
 ```
 
-4. **Configurar Chatbot (Opcional)**
-```bash
-# Editar backend/config.env
-# Descomentar y configurar la línea:
-OPENAI_API_KEY=tu_api_key_aqui
-```
-
-5. **Acceder al Sistema**
+3. **Acceder al Sistema**
+- **Frontend:** http://localhost:8080
 - **Backend API:** http://localhost:3000
-- **Frontend:** Abrir `frontend/pages/dashboard.html`
-- **Demo Chatbot:** `frontend/pages/chatbot-demo.html`
-- **Login:** admin@sgpe.com / admin123
+- **Credenciales:** admin@sgpe.com / admin123
 
 ## 📁 Estructura del Proyecto
 
 ```
 SGPE/
 ├── backend/                 # Servidor Node.js + Express
-│   ├── config/             # Configuración de BD y variables de entorno
+│   ├── config/             
+│   │   ├── database.js     # Configuración de SQLite
+│   │   ├── associations.js # Relaciones entre modelos
+│   │   └── initDatabase.js # Inicialización de BD
 │   ├── controllers/        # Lógica de negocio
-│   │   ├── authController.js
-│   │   ├── clienteController.js
-│   │   ├── productoController.js
-│   │   ├── facturaController.js
-│   │   └── chatbotController.js  #  Nuevo: Controlador del chatbot
-│   ├── models/            # Modelos de datos (Sequelize)
-│   ├── routes/            # Rutas API
-│   │   └── chatbotRoutes.js     #  Nuevo: Rutas del chatbot
-│   ├── server.js          # Servidor principal
-│   └── package.json       # Dependencias del backend
-├── frontend/              # Interfaz de usuario
-│   ├── pages/            # Páginas HTML
-│   │   ├── chatbot.css          #  Nuevo: Estilos del chatbot
-│   │   ├── chatbot.js           #  Nuevo: Lógica del chatbot
-│   │   └── chatbot-demo.html    #  Nuevo: Demo del chatbot
-│   ├── js/               # JavaScript del frontend
-│   ├── components/       # Componentes reutilizables
-│   │   └── chatbot-widget.html  #  Nuevo: Widget del chatbot
-│   ├── index.html        # Página principal
-│   └── package.json      # Dependencias del frontend
-├── database/             # Scripts de base de datos
-├── SETUP.md             # Guía completa de configuración
-├── CHATBOT-README.md    #  Nuevo: Documentación del chatbot
-├── CHATBOT-GUIA-RAPIDA.md #  Nuevo: Guía rápida del chatbot
-├── start-chatbot.bat    #  Nuevo: Script para iniciar con chatbot
-└── README.md            # Este archivo
+│   │   ├── authController.js    # Autenticación JWT
+│   │   ├── clienteController.js # CRUD clientes
+│   │   ├── productoController.js # CRUD productos
+│   │   └── facturaController.js # CRUD facturas
+│   ├── models/            # Modelos Sequelize
+│   │   ├── Usuario.js     # Modelo de usuarios
+│   │   ├── Cliente.js     # Modelo de clientes
+│   │   ├── Producto.js    # Modelo de productos
+│   │   ├── Factura.js     # Modelo de facturas
+│   │   └── DetalleFactura.js # Detalles de factura
+│   ├── routes/            # Rutas API REST
+│   │   ├── authRoutes.js      # /api/auth/*
+│   │   ├── clienteRoutes.js   # /api/clientes/*
+│   │   ├── productoRoutes.js  # /api/productos/*
+│   │   └── facturaRoutes.js   # /api/facturas/*
+│   ├── database.sqlite    # Base de datos SQLite
+│   ├── server.js         # Servidor principal
+│   └── package.json      # Dependencias backend
+├── frontend/             # Interfaz de usuario
+│   ├── pages/           # Páginas principales
+│   │   ├── dashboard.html + .css + .js    # Dashboard principal
+│   │   ├── login.html + .css + .js        # Página de login
+│   │   ├── register.html + .js            # Registro de usuarios
+│   │   ├── clientes.html + pagina_cliente.css + .js # Gestión clientes
+│   │   ├── producto.html + Producto.css + .js       # Gestión productos
+│   │   ├── facturacion.html + .css + .js           # Sistema facturación
+│   │   └── chatbot.css + .js              # Estilos chatbot (dashboard)
+│   ├── js/              # JavaScript compartido
+│   │   ├── api.js       # Servicios API y comunicación backend
+│   │   └── auth.js      # Sistema autenticación frontend
+│   ├── index.html       # Página de carga y verificación
+│   └── package.json     # Dependencias frontend
+├── start-project.bat    # Script inicio automático Windows
+├── start.bat + start.sh # Scripts alternativos
+└── documentación/       # Archivos informativos
 ```
 
-##  Base de Datos
+## 🗄️ Base de Datos
 
-El sistema utiliza **SQLite** para desarrollo (archivo `database.sqlite`) con las siguientes tablas:
+El sistema utiliza **SQLite** con las siguientes tablas principales:
+
+### Usuarios
+- **id** (Primary Key)
+- **email** (Unique)
+- **password** (Encrypted)
+- **rol** (admin/usuario)
+- **activo** (Boolean)
+
+### Clientes
+- **id** (Primary Key)
+- **nombre** (String)
+- **email** (String)
+- **telefono** (String)
+
+### Productos
+- **id** (Primary Key)
+- **codigo** (Unique)
+- **nombre** (String)
+- **categoria** (String)
+- **precio** (Decimal)
+- **stock** (Integer)
+- **stockMinimo** (Integer)
+
+### Facturas & DetalleFactura
+- Sistema completo de facturación con relaciones
+- Cálculo automático de totales e ITBIS (18%)
+
+## 🌐 API Endpoints
+
+### Autenticación
+```
+POST /api/auth/login     # Iniciar sesión
+POST /api/auth/register  # Registrar usuario
+GET  /api/auth/profile   # Obtener perfil usuario
+```
+
+### Gestión de Clientes
+```
+GET    /api/clientes     # Listar todos los clientes
+POST   /api/clientes     # Crear nuevo cliente
+PUT    /api/clientes/:id # Actualizar cliente existente
+DELETE /api/clientes/:id # Eliminar cliente
+```
+
+### Gestión de Productos
+```
+GET    /api/productos     # Listar todos los productos
+POST   /api/productos     # Crear nuevo producto
+PUT    /api/productos/:id # Actualizar producto existente
+DELETE /api/productos/:id # Eliminar producto
+```
+
+### Sistema de Facturación
+```
+GET    /api/facturas     # Listar todas las facturas
+POST   /api/facturas     # Crear nueva factura
+GET    /api/facturas/:id # Obtener factura específica
+PUT    /api/facturas/:id # Actualizar factura
+DELETE /api/facturas/:id # Eliminar factura
+```
+
+### Endpoints de Estado
+```
+GET /api               # Estado general de la API
+GET /api/status        # Verificación de salud del servidor
+```
+
+## ✅ Funcionalidades Implementadas
+
+### 🔧 Backend Completo
+- ✅ API REST con Express.js
+- ✅ Base de datos SQLite con Sequelize ORM
+- ✅ Sistema de autenticación JWT completo
+- ✅ Controladores para todas las entidades (CRUD)
+- ✅ Validaciones de entrada y manejo de errores
+- ✅ CORS configurado para desarrollo y producción
+- ✅ Middleware de autenticación
+- ✅ Inicialización automática de base de datos
+
+### 🎨 Frontend Completo
+- ✅ Interfaz responsive con CSS Grid y Flexbox
+- ✅ Dashboard interactivo con Chart.js
+- ✅ Gestión completa de clientes con búsqueda
+- ✅ Control de inventario con alertas visuales
+- ✅ Sistema de facturación multi-producto
+- ✅ Login/Register con validación en tiempo real
+- ✅ Modales personalizados para confirmaciones
+- ✅ Navegación fluida entre módulos
+- ✅ Sistema de mensajes de éxito/error
+
+### 🔗 Integración Sistema
+- ✅ Comunicación frontend-backend sin librerías externas
+- ✅ Autenticación consistente en todas las páginas
+- ✅ Manejo de tokens JWT con expiración
+- ✅ Validaciones sincronizadas frontend-backend
+- ✅ Estados de carga y manejo de errores
+- ✅ Respuestas en tiempo real
+
+## 📊 Características del Dashboard
+
+### Métricas en Tiempo Real
+- **Total Productos** - Con indicador de stock bajo
+- **Total Clientes** - Clientes registrados
+- **Total Facturas** - Facturas del mes actual
+- **Ventas Totales** - Ingresos en RD$
+
+### Gráficos Interactivos
+- **Gráfico de Dona** - Distribución de productos por categorías
+- **Gráfico de Barras** - Análisis de stock actual vs. stock mínimo
+
+### Accesos Rápidos
+- Nuevo Producto
+- Nuevo Cliente  
+- Nueva Factura
+
+## 🔧 Scripts Disponibles
+
+### Backend
+```bash
+npm start          # Ejecutar servidor en producción
+npm run dev        # Desarrollo con auto-reload (nodemon)
+npm run init-db    # Inicializar base de datos
+npm test          # Ejecutar tests
+```
+
+### Frontend
+```bash
+npm start          # Servidor de desarrollo (port 8080)
+npm run dev        # Alias para npm start
+npm run preview    # Preview de producción
+```
+
+## 👥 Datos de Ejemplo
+
+### Usuario Administrador
+- **Email:** admin@sgpe.com  
+- **Password:** admin123
+- **Rol:** Administrador
+
+### Productos de Ejemplo
+- **Laptop Dell XPS 13** (Electrónicos) - RD$ 45,000
+- **Camisa Polo** (Ropa) - RD$ 1,200
+
+## 🚨 Solución de Problemas
+
+### Error de Conexión API
+1. Verificar que el backend esté en puerto 3000
+2. Verificar que el frontend esté en puerto 8080  
+3. Revisar consola del navegador para errores CORS
+
+### Error de Base de Datos
+```bash
+cd backend
+npm run init-db
+rm database.sqlite  # Si es necesario reiniciar
+npm start
+```
+
+### Problemas de Autenticación
+1. Limpiar localStorage del navegador
+2. Verificar que el token no haya expirado
+3. Reiniciar sesión
+
+### Puertos Ocupados
+```bash
+# Windows
+netstat -ano | findstr :3000
+netstat -ano | findstr :8080
+
+# Cambiar puertos en package.json si es necesario
+```
+
+## 🔮 Próximas Características
+
+- [ ] **Reportes PDF** - Generación de facturas en PDF
+- [ ] **Backup Automático** - Respaldo periódico de datos
+- [ ] **Multi-idioma** - Soporte para inglés/español
+- [ ] **API de Pagos** - Integración con pasarelas de pago
+- [ ] **Notificaciones** - Sistema de alertas en tiempo real
+- [ ] **Roles Avanzados** - Permisos granulares por usuario
+
+## 📚 Documentación Adicional
+
+- **[SETUP.md](./SETUP.md)** - Guía detallada de instalación
+- **[roadmap.md](./roadmap.md)** - Hoja de ruta del proyecto  
+- **[LICENSE](./LICENSE)** - Información de licencia
+
+## 🤝 Contribuir
+
+1. Fork el proyecto
+2. Crear rama feature (`git checkout -b feature/NuevaCaracteristica`)
+3. Commit cambios (`git commit -m 'Agregar nueva característica'`)
+4. Push a la rama (`git push origin feature/NuevaCaracteristica`)
+5. Crear Pull Request
+
+## 📄 Licencia
+
+Este proyecto está bajo la **Licencia ISC**. Ver [LICENSE](./LICENSE) para más detalles.
+
+---
+
+## 👨‍💻 Desarrolladores
+
+**Equipo de Desarrollo SGPE:**
+
+- **Reyning Perdomo Feliz** - 2023-1110
+- **David Alejandro Liranzo** - 2023-1127  
+- **Elier Moreta Encarnación** - 2023-1168
+
+---
+
+### 🎯 SGPE - Simplificando la gestión empresarial
+
+*Un sistema moderno, eficiente y fácil de usar para pequeñas empresas dominicanas.*
 
 
 ## API Endpoints
@@ -253,9 +493,6 @@ Para información detallada sobre configuración, consulte:
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abrir un Pull Request
 
-##  Licencia
-
-Este proyecto está bajo la Licencia ISC. Ver el archivo [LICENSE](./LICENSE) para más detalles.
 
 ## Autores
 Reyning Perdomo Feliz 2023-1110
